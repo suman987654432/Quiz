@@ -212,7 +212,7 @@ const QuizInterface = () => {
       // Convert answers object to array
       const answersArray = Array.from(
         { length: questions.length },
-        (_, i) => answers[i] || 0
+        (_, i) => answers[i] !== undefined ? answers[i] : null
       );
 
       const response = await fetch(`${API_URL}/quiz/submit`, {

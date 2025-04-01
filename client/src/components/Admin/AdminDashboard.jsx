@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ResultDetailsModal from './ResultDetailsModal';
 import { API_URL } from '../../config/config';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const AdminDashboard = () => {
   const [questions, setQuestions] = useState([]);
@@ -318,12 +320,19 @@ const AdminDashboard = () => {
 
   // Add delete all results function
   const handleDeleteAllResults = async () => {
-    if (!window.confirm('Are you sure you want to delete ALL user results? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to delete ALL quiz results? This action cannot be undone.')) {
       return;
     }
 
     try {
       const token = localStorage.getItem('adminToken');
+      if (!token) {
+        console.error('Admin token is missing');
+        setError('Authentication error. Please login again.');
+        return;
+      }
+      
+      console.log('Attempting to delete all results');
       const response = await fetch(`${API_URL}/quiz/results/all`, {
         method: 'DELETE',
         headers: {
@@ -332,16 +341,20 @@ const AdminDashboard = () => {
         }
       });
 
+      const data = await response.json();
+      console.log('Delete all results response:', data);
+
       if (!response.ok) {
-        throw new Error('Failed to delete all results');
+        throw new Error(`Failed to delete all results: ${data.message || response.statusText}`);
       }
 
-      // Clear user results from state
+      // Reset results after successful deletion
       setUserResults([]);
-      setError('');
-    } catch (err) {
-      console.error('Error:', err);
-      setError('Failed to delete all results');
+      setError(''); // Clear any existing error messages
+      alert(`All quiz results have been deleted successfully (${data.count || 0} results removed)`);
+    } catch (error) {
+      console.error('Error deleting all results:', error);
+      setError(`Failed to delete all results: ${error.message}`);
     }
   };
 
@@ -464,6 +477,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 p-4 md:p-8">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="max-w-6xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
           <div className="flex flex-col md:flex-row justify-between items-center mb-8 pb-4 border-b border-gray-200">

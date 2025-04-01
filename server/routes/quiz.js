@@ -214,6 +214,17 @@ router.post('/quiz/submit', async (req, res) => {  // Changed back to /quiz/subm
         let score = 0;
         const results = questions.map((q, index) => {
             const userAnswer = answers[index];
+            
+            // Handle null (unanswered) differently
+            if (userAnswer === null) {
+                return {
+                    question: q.question,
+                    userAnswer: "Not answered",
+                    correctAnswer: q.options[q.correctAnswer - 1],
+                    correct: false
+                };
+            }
+            
             const correct = userAnswer === q.correctAnswer - 1;
             if (correct) score++;
 
@@ -341,26 +352,7 @@ router.get('/settings', auth, async (req, res) => {
     }
 });
 
-// Delete a user result (admin only)
-router.delete('/quiz/results/:id', auth, async (req, res) => {
-    try {
-        if (req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'Not authorized' });
-        }
-
-        const result = await Result.findByIdAndDelete(req.params.id);
-        if (!result) {
-            return res.status(404).json({ message: 'Result not found' });
-        }
-
-        res.json({ message: 'Result deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting result:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-});
-
-// Delete all results (admin only)
+// Delete all results (admin only) - THIS ROUTE MUST COME FIRST
 router.delete('/quiz/results/all', auth, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
@@ -368,12 +360,44 @@ router.delete('/quiz/results/all', auth, async (req, res) => {
         }
 
         // Delete all results from the database
-        await Result.deleteMany({});
-
-        console.log('All results deleted by admin');
-        res.json({ message: 'All results deleted successfully' });
+        const deleteResult = await Result.deleteMany({});
+        
+        console.log('All results deleted by admin', deleteResult);
+        res.json({ 
+            message: 'All results deleted successfully',
+            count: deleteResult.deletedCount
+        });
     } catch (error) {
         console.error('Error deleting all results:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+// Delete a user result (admin only) - THIS MUST COME AFTER THE /all ROUTE
+router.delete('/quiz/results/:id', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+
+        // Check if trying to delete a specific result
+        const resultId = req.params.id;
+        
+        // This route should only handle specific result deletions
+        if (resultId === 'all') {
+            return res.status(400).json({ 
+                message: 'To delete all results, use the /quiz/results/all endpoint' 
+            });
+        }
+
+        const result = await Result.findByIdAndDelete(resultId);
+        if (!result) {
+            return res.status(404).json({ message: 'Result not found' });
+        }
+
+        res.json({ message: 'Result deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting result:', error);
         res.status(500).json({ message: 'Server error' });
     }
 });
