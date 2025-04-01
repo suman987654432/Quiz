@@ -1,1 +1,1 @@
-export const API_URL = import.meta.env.VITE_PUBLIC_API_URL || 'http://localhost:5000';
+export const API_URL = import.meta.env.VITE_PUBLIC_API_URL || 'https://quiz-3z2h.onrender.com';
