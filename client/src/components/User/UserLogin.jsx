@@ -296,7 +296,17 @@ const UserLogin = () => {
             </p>
           </div>
 
-          <Link to={'/admin'}>Admin</Link>
+          <div className="mt-6 flex justify-center">
+            <Link 
+              to={'/admin'} 
+              className="flex items-center px-4 py-2 text-indigo-800 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v-1l1-1 1-1-.257-.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+              </svg>
+              Admin Portal
+            </Link>
+          </div>
           
           {(serverStatus === 'offline' || serverStatus === 'degraded') && (
             <div className="mt-4 text-center">

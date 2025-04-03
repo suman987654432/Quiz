@@ -26,8 +26,9 @@ function App() {
     <Router>
       <div className="App">
         <Routes>
+
           {/* Public Routes */}
-          <Route path="/" element={<UserLogin />} />
+          <Route  path="/" element={<UserLogin />} />
           <Route path="/start" element={<StartPage />} />
           <Route path="/quiz" element={<QuizInterface />} />
           <Route path="/results" element={<Results />} />
