@@ -124,6 +124,27 @@ router.delete('/questions/:id', auth, async (req, res) => {
     }
 });
 
+// Delete all questions (admin only)
+router.delete('/questions/all', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+
+        // Delete all questions from the database
+        const deleteResult = await Question.deleteMany({});
+        
+        console.log('All questions deleted by admin', deleteResult);
+        res.json({ 
+            message: 'All questions deleted successfully',
+            count: deleteResult.deletedCount
+        });
+    } catch (error) {
+        console.error('Error deleting all questions:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 // Toggle quiz status
 router.post('/quiz/toggle-status', auth, async (req, res) => {
     try {

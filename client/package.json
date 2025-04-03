@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "axios": "^1.7.9",
+    "prismjs": "^1.30.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.0",
+    "react-syntax-highlighter": "^15.6.1",
     "react-toastify": "^11.0.5"
   },
   "devDependencies": {

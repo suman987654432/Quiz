@@ -38,6 +38,7 @@ const StartPage = () => {
               <ul className="text-blue-700 text-sm space-y-1">
                 <li>• Read each question carefully before answering</li>
                 <li>• Don't change tabs or the test will be automatically submitted</li>
+                <li className="text-red-600 font-medium">• Changing tabs once will trigger a warning, changing tabs twice will automatically submit your quiz</li>
                 <li>• The quiz will begin when the admin starts it, then you can answer questions</li>
                 <li>• Make sure you have a stable internet connection</li>
               </ul>

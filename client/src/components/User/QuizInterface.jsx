@@ -381,7 +381,9 @@ const QuizInterface = () => {
                   }`}>
                     {String.fromCharCode(65 + index)}
                   </div>
-                  <span className={answers[currentQuestion] === index ? 'font-medium' : ''}>{option}</span>
+                  <pre className="option-content whitespace-pre-wrap text-base font-normal break-words">
+                    {option}
+                  </pre>
                 </div>
               </button>
             ))}

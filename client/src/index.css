@@ -76,6 +76,41 @@ body {
   .page-container {
     @apply min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50 p-4;
   }
+
+  /* Add these styles for code formatting */
+  .formatted-text {
+    @apply break-words;
+  }
+
+  .formatted-text code {
+    @apply bg-gray-100 px-1 py-0.5 rounded text-red-600 font-mono text-sm;
+  }
+
+  pre {
+    @apply whitespace-pre-wrap;
+    @apply overflow-x-auto;
+    @apply my-2;
+  }
+
+  /* Adjust option buttons */
+  .option-content {
+    @apply w-full;
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: inherit;
+  }
+
+  /* Preserve whitespace in textareas */
+  textarea.whitespace-pre-wrap {
+    white-space: pre-wrap;
+  }
+
+  /* Make sure code blocks in options don't overflow */
+  button .formatted-text pre,
+  button pre.option-content {
+    @apply text-sm max-w-full overflow-x-auto;
+    white-space: pre-wrap;
+  }
 }
 
 @keyframes fadeIn {
