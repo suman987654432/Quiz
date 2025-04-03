@@ -7,7 +7,15 @@ import { UNSAFE_NavigationContext as NavigationContext } from 'react-router-dom'
 const root = createRoot(document.getElementById('root'))
 root.render(
   <StrictMode>
-    <NavigationContext.Provider  >
+    <NavigationContext.Provider
+      value={{
+        basename: '',
+        future: {
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }
+      }}
+    >
       <App />
     </NavigationContext.Provider>
   </StrictMode>,

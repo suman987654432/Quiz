@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { API_URL } from '../../config/config';
 import { toast } from 'react-toastify';
 
@@ -295,6 +295,8 @@ const UserLogin = () => {
               You can use any name and email to start the quiz. No registration required!
             </p>
           </div>
+
+          <Link to={'/admin'}>Admin</Link>
           
           {(serverStatus === 'offline' || serverStatus === 'degraded') && (
             <div className="mt-4 text-center">
