@@ -191,18 +191,18 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <h2 className="text-2xl font-bold text-indigo-800 flex items-center">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 0l-2 2a1 1 0 101.414 1.414L8 10.414l1.293 1.293a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
           </svg>
           Quiz Results
         </h2>
-        <div className="flex space-x-3">
+        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
           {userResults.length > 0 && (
             <button
               onClick={downloadUserResults}
-              className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition-colors duration-200 flex items-center gap-2 shadow-sm"
+              className="bg-indigo-500 text-white px-3 py-2 rounded-lg hover:bg-indigo-600 transition-colors duration-200 flex items-center gap-2 shadow-sm text-sm w-full sm:w-auto justify-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -213,7 +213,7 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
           {userResults.length > 0 && (
             <button
               onClick={handleDeleteAllResults}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center gap-2 shadow-sm"
+              className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center gap-2 shadow-sm text-sm w-full sm:w-auto justify-center"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
@@ -225,9 +225,9 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
       </div>
 
       {/* Search and Filter Section */}
-      <div className="bg-white p-5 rounded-xl shadow-md mb-6 border border-gray-200">
+      <div className="bg-white p-4 sm:p-5 rounded-xl shadow-md mb-6 border border-gray-200">
         <h3 className="text-lg font-semibold mb-4 text-indigo-700">Search and Filter</h3>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
             <input
@@ -291,7 +291,7 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
 
       {/* Results display */}
       {filteredResults.length === 0 ? (
-        <div className="bg-white p-8 rounded-xl text-center">
+        <div className="bg-white p-4 sm:p-8 rounded-xl text-center">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
@@ -307,16 +307,16 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
           <table className="min-w-full bg-white">
             <thead className="bg-indigo-50 text-indigo-800">
               <tr>
-                <th className="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
                   User
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
                   Score
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
                   Date
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
+                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
                   Actions
                 </th>
               </tr>
@@ -324,19 +324,19 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
             <tbody className="divide-y divide-gray-200">
               {filteredResults.map((result, index) => (
                 <tr key={index} className="hover:bg-indigo-50 transition-colors duration-150">
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-gray-900">{result.user.name}</div>
-                    <div className="text-sm text-gray-500">{result.user.email}</div>
+                    <div className="text-xs sm:text-sm text-gray-500">{result.user.email}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                    <div className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
                       {result.score} / {result.total}
-                      <span className="ml-2 px-2 py-1 rounded-full bg-blue-200 text-xs">
+                      <span className="ml-1 sm:ml-2 px-1 sm:px-2 py-1 rounded-full bg-blue-200 text-xs">
                         {((result.score / result.total) * 100).toFixed(1)}%
                       </span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
                     {new Date(result.createdAt).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'short',
@@ -345,8 +345,8 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
                       minute: '2-digit'
                     })}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-3">
+                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                    <div className="flex gap-2 sm:gap-3">
                       <button
                         onClick={() => onViewDetails(result)}
                         className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 p-2 rounded-full transition-colors flex items-center"
