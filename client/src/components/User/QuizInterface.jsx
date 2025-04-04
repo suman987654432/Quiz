@@ -14,6 +14,8 @@ const QuizInterface = () => {
   const [totalDuration, setTotalDuration] = useState(null);
   const timerRef = useRef(null);
   const navigate = useNavigate();
+  const [tabChangeCount, setTabChangeCount] = useState(0);
+  const tabChangeCountRef = useRef(0);
 
   useEffect(() => {
     const userName = localStorage.getItem('userName');
@@ -223,7 +225,8 @@ const QuizInterface = () => {
         body: JSON.stringify({
           answers: answersArray,
           userName: localStorage.getItem('userName'),
-          userEmail: localStorage.getItem('userEmail')
+          userEmail: localStorage.getItem('userEmail'),
+          tabChanges: tabChangeCount // Add tab change count to submission
         })
       });
 
@@ -271,6 +274,33 @@ const QuizInterface = () => {
     
     return <span className={getTimeLeftColor()}>{formatTime(timeLeft)}</span>;
   };
+
+  // Add tab visibility change handler
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isTimerRunning) { // Only track tab changes after timer starts
+        tabChangeCountRef.current += 1;
+        setTabChangeCount(prev => prev + 1);
+        
+        if (tabChangeCountRef.current === 1) {
+          // First tab change - show warning
+          toast.error("Warning: Changing tabs is not allowed! Your quiz will be automatically submitted if you change tabs again.", {
+            autoClose: 5000
+          });
+        } else {
+          // Auto submit on second tab change
+          toast.error("Quiz submitted automatically - tab was changed multiple times!");
+          handleSubmit();
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isTimerRunning]); // Add isTimerRunning as dependency
 
   if (error) {
     return (
