@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_URL } from '../../config/config';
-import { toast } from 'react-toastify';
+
 
 const UserLogin = () => {
   const [userDetails, setUserDetails] = useState({
@@ -13,13 +13,17 @@ const UserLogin = () => {
   const [serverStatus, setServerStatus] = useState('checking'); // 'checking', 'online', 'offline'
   const navigate = useNavigate();
 
-  // Check if user is already logged in
+  // Check if server is reachable, but don't check for user login state
   useEffect(() => {
-    const userName = localStorage.getItem('userName');
-    const userEmail = localStorage.getItem('userEmail');
-    if (userName && userEmail) {
-      navigate('/start');
-    }
+    // Clear any existing user session data when arriving on login page
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('offlineMode');
+    localStorage.removeItem('timerStarted');
+    localStorage.removeItem('timerStartTime');
+    localStorage.removeItem('totalDuration');
+    localStorage.removeItem('quizAnswers');
+    localStorage.removeItem('currentQuestion');
     
     // Check if server is reachable
     checkServerStatus();
