@@ -111,6 +111,79 @@ body {
     @apply text-sm max-w-full overflow-x-auto;
     white-space: pre-wrap;
   }
+
+  .textarea-autoresize {
+    @apply resize-none overflow-hidden;
+    min-height: 2.5rem;
+  }
+
+  /* Style for read-only textareas */
+  textarea[readonly] {
+    @apply cursor-default;
+  }
+
+  textarea[readonly]:focus {
+    @apply outline-none ring-0 border-transparent;
+  }
+
+  /* Preserve whitespace in textareas */
+  textarea {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* Question display textarea */
+  .question-textarea {
+    @apply text-xl font-bold text-gray-800 bg-transparent border-none resize-none;
+  }
+  
+  /* Option display textarea */
+  .option-textarea {
+    @apply text-base text-gray-700 bg-transparent border-none resize-none;
+  }
+
+  /* Question display improvements */
+  .card textarea[readonly] {
+    @apply block w-full;
+    min-height: fit-content !important;
+    height: auto !important;
+    overflow-y: hidden !important;
+  }
+
+  .option-button {
+    @apply w-full text-left transition-all duration-200;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+
+  /* Question display styles */
+  .question-section {
+    @apply bg-white rounded-xl shadow-sm;
+  }
+
+  .question-text {
+    max-width: 100%;
+    word-wrap: break-word;
+  }
+
+  .question-text h2 {
+    @apply text-xl font-semibold text-gray-800;
+    line-height: 1.6;
+  }
+
+  .options-grid button:hover {
+    transform: translateY(-1px);
+  }
+
+  .options-grid button:active {
+    transform: translateY(0);
+  }
+
+  /* Ensure proper word wrapping */
+  .whitespace-pre-wrap {
+    white-space: pre-wrap !important;
+    word-break: break-word;
+  }
 }
 
 @keyframes fadeIn {

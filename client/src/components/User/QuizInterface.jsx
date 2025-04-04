@@ -359,80 +359,86 @@ const QuizInterface = () => {
           )}
         </div>
         
-        <div className="card p-6 mb-6 animate-fadeIn">
-          <h2 className="text-xl font-bold mb-6 text-gray-800">{questions[currentQuestion].question}</h2>
-          
-          <div className="space-y-3 mb-6">
-            {questions[currentQuestion].options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswer(index)}
-                className={`w-full p-4 text-left rounded-lg border transition-all duration-200 ${
-                  answers[currentQuestion] === index
-                    ? 'bg-indigo-100 border-indigo-300 ring-2 ring-indigo-500 ring-opacity-50'
-                    : 'bg-white border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex items-start">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm font-medium mr-3 mt-0.5 flex-shrink-0 ${
-                    answers[currentQuestion] === index
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-200 text-gray-700'
-                  }`}>
-                    {String.fromCharCode(65 + index)}
-                  </div>
-                  <pre className="option-content whitespace-pre-wrap text-base font-normal break-words">
-                    {option}
-                  </pre>
-                </div>
-              </button>
-            ))}
-          </div>
-          
-          <div className="flex justify-between">
-            <button
-              onClick={handlePreviousQuestion}
-              className={`px-4 py-2 rounded-lg flex items-center ${
-                currentQuestion === 0
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'
-              }`}
-              disabled={currentQuestion === 0}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L4.414 9H17a1 1 0 110 2H4.414l5.293 5.293a1 1 0 010 1.414z" clipRule="evenodd" />
-              </svg>
-              Previous
-            </button>
+        <div className="question-section mb-6">
+          <div className="bg-white rounded-lg p-6 shadow-sm">
+            <div className="question-text mb-4">
+              <h2 className="text-xl font-semibold text-gray-800 whitespace-pre-wrap break-words leading-relaxed">
+                {questions[currentQuestion].question}
+              </h2>
+            </div>
             
-            {currentQuestion === questions.length - 1 ? (
-              <button
-                onClick={handleSubmit}
-                disabled={!isQuizLive}
-                className={`${
-                  isQuizLive 
-                    ? 'bg-green-600 hover:bg-green-700' 
-                    : 'bg-gray-400 cursor-not-allowed'
-                } text-white px-6 py-2 rounded-lg flex items-center`}
-                title={!isQuizLive ? "Quiz must be activated by the admin before submission" : ""}
-              >
-                Submit Quiz
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </button>
-            ) : (
-              <button
-                onClick={handleNextQuestion}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center"
-              >
-                Next Question
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-                </svg>
-              </button>
-            )}
+            <div className="options-grid space-y-3">
+              {questions[currentQuestion].options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswer(index)}
+                  className={`w-full p-4 text-left rounded-lg border transition-colors duration-200 hover:shadow-sm ${
+                    answers[currentQuestion] === index
+                      ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-500'
+                      : 'bg-gray-50 border-gray-200 hover:bg-white'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium ${
+                      answers[currentQuestion] === index
+                        ? 'bg-indigo-600 text-white'
+                        : 'bg-gray-200 text-gray-700'
+                    }`}>
+                      {String.fromCharCode(65 + index)}
+                    </div>
+                    <span className="text-base text-gray-700 whitespace-pre-wrap break-words">
+                      {option}
+                    </span>
+                  </div>
+                </button>
+              ))}
+            </div>
           </div>
+        </div>
+        
+        <div className="flex justify-between">
+          <button
+            onClick={handlePreviousQuestion}
+            className={`px-4 py-2 rounded-lg flex items-center ${
+              currentQuestion === 0
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'
+            }`}
+            disabled={currentQuestion === 0}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L4.414 9H17a1 1 0 110 2H4.414l5.293 5.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+            Previous
+          </button>
+          
+          {currentQuestion === questions.length - 1 ? (
+            <button
+              onClick={handleSubmit}
+              disabled={!isQuizLive}
+              className={`${
+                isQuizLive 
+                  ? 'bg-green-600 hover:bg-green-700' 
+                  : 'bg-gray-400 cursor-not-allowed'
+              } text-white px-6 py-2 rounded-lg flex items-center`}
+              title={!isQuizLive ? "Quiz must be activated by the admin before submission" : ""}
+            >
+              Submit Quiz
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </button>
+          ) : (
+            <button
+              onClick={handleNextQuestion}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center"
+            >
+              Next Question
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+              </svg>
+            </button>
+          )}
         </div>
         
         <div className="w-full bg-white rounded-full h-2 overflow-hidden">

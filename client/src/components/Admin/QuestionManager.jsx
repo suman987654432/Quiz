@@ -175,22 +175,20 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
         <div className="mb-4">
           <label className="block mb-2 font-medium text-gray-700">Question</label>
           <textarea
-            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 min-h-[100px]"
             value={newQuestion.question}
             onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
             required
             placeholder="Enter your question here"
-            rows={4} // Adjust rows as needed
           ></textarea>
         </div>
-
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {newQuestion.options.map((option, index) => (
             <div key={index} className="mb-4">
               <label className="block mb-2 font-medium text-gray-700">Option {index + 1}</label>
               <textarea
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 whitespace-pre-wrap"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200 min-h-[80px]"
                 value={option}
                 onChange={(e) => {
                   const newOptions = [...newQuestion.options];
@@ -199,7 +197,6 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
                 }}
                 required
                 placeholder={`Option ${index + 1}`}
-                rows={3}
               ></textarea>
             </div>
           ))}
@@ -257,15 +254,15 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
             <div key={q._id} className="bg-white p-5 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200">
               {editingQuestion?._id === q._id ? (
                 <form onSubmit={handleEditQuestion} className="space-y-4">
-                  <input
-                    type="text"
+                  <textarea
                     value={editingQuestion.question}
                     onChange={(e) => setEditingQuestion({
                       ...editingQuestion,
                       question: e.target.value
                     })}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[100px]"
+                    required
+                  ></textarea>
                   {editingQuestion.options.map((option, i) => (
                     <textarea
                       key={i}
@@ -278,8 +275,8 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
                           options: newOptions
                         });
                       }}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 whitespace-pre-wrap"
-                      rows={3}
+                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 min-h-[80px]"
+                      required
                     ></textarea>
                   ))}
                   <div className="flex gap-3">
