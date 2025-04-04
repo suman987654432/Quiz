@@ -106,14 +106,20 @@ router.put('/questions/:id', auth, async (req, res) => {
     }
 });
 
-// Delete a question (admin only)
-router.delete('/questions/:id', auth, async (req, res) => {
+// Delete a question (admin only) using query parameter
+router.delete('/questions', auth, async (req, res) => {
+
     try {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-        const question = await Question.findByIdAndDelete(req.params.id);
+        const { id } = req.query; // Get id from query parameters
+        if (!id) {
+            return res.status(400).json({ message: 'Question ID is required' });
+        }
+
+        const question = await Question.findByIdAndDelete(id);
         if (!question) {
             return res.status(404).json({ message: 'Question not found' });
         }
@@ -124,25 +130,25 @@ router.delete('/questions/:id', auth, async (req, res) => {
     }
 });
 
-// Delete all questions (admin only)
-// router.delete('/questions/all', auth, async (req, res) => {
-//     try {
-//         if (req.user.role !== 'admin') {
-//             return res.status(403).json({ message: 'Not authorized' });
-//         }
 
-//         const deleteResult = await Question.deleteMany({});
-        
-//         console.log('All questions deleted by admin', deleteResult);
-//         res.json({ 
-//             message: 'All questions deleted successfully',
-//             count: deleteResult.deletedCount
-//         });
-//     } catch (error) {
-//         console.error('Error deleting all questions:', error);
-//         res.status(500).json({ message: 'Server error' });
-//     }
-// });
+// Delete all questions (admin only)
+router.delete('/questions/all', auth, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Not authorized' });
+        }
+
+        const deleteResult = await Question.deleteMany({});
+
+        res.json({
+            message: 'All questions deleted successfully',
+            count: deleteResult.deletedCount
+        });
+    } catch (error) {
+        console.error('Error deleting all questions:', error);
+        res.status(500).json({ message: error });
+    }
+});
 
 // Toggle quiz status
 router.post('/quiz/toggle-status', auth, async (req, res) => {
@@ -150,21 +156,21 @@ router.post('/quiz/toggle-status', auth, async (req, res) => {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Not authorized' });
         }
-        
+
         const { isLive } = req.body;
-        
+
         // Update quiz settings with new status
         let settings = await QuizSettings.findOne();
         if (!settings) {
-            settings = new QuizSettings({ 
+            settings = new QuizSettings({
                 duration: 30,
-                isLive: isLive 
+                isLive: isLive
             });
         } else {
             settings.isLive = isLive;
         }
         await settings.save();
-        
+
         res.json({ success: true, isLive });
     } catch (error) {
         console.error('Error toggling quiz status:', error);
@@ -217,9 +223,9 @@ router.post('/quiz/submit', async (req, res) => {  // Changed back to /quiz/subm
         // Check if quiz is live before allowing submission
         const settings = await QuizSettings.findOne();
         if (!settings || !settings.isLive) {
-            return res.status(403).json({ 
-                message: 'Quiz is not active', 
-                quizActive: false 
+            return res.status(403).json({
+                message: 'Quiz is not active',
+                quizActive: false
             });
         }
 
@@ -234,7 +240,7 @@ router.post('/quiz/submit', async (req, res) => {  // Changed back to /quiz/subm
         let score = 0;
         const results = questions.map((q, index) => {
             const userAnswer = answers[index];
-            
+
             // Handle null (unanswered) differently
             if (userAnswer === null) {
                 return {
@@ -244,7 +250,7 @@ router.post('/quiz/submit', async (req, res) => {  // Changed back to /quiz/subm
                     correct: false
                 };
             }
-            
+
             const correct = userAnswer === q.correctAnswer - 1;
             if (correct) score++;
 
@@ -381,9 +387,9 @@ router.delete('/quiz/results/all', auth, async (req, res) => {
 
         // Delete all results from the database
         const deleteResult = await Result.deleteMany({});
-        
+
         console.log('All results deleted by admin', deleteResult);
-        res.json({ 
+        res.json({
             message: 'All results deleted successfully',
             count: deleteResult.deletedCount
         });
@@ -402,11 +408,11 @@ router.delete('/quiz/results/:id', auth, async (req, res) => {
 
         // Check if trying to delete a specific result
         const resultId = req.params.id;
-        
+
         // This route should only handle specific result deletions
         if (resultId === 'all') {
-            return res.status(400).json({ 
-                message: 'To delete all results, use the /quiz/results/all endpoint' 
+            return res.status(400).json({
+                message: 'To delete all results, use the /quiz/results/all endpoint'
             });
         }
 

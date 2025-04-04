@@ -67,7 +67,7 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
 
     try {
       const token = localStorage.getItem('adminToken');
-      const response = await fetch(`${API_URL}/questions/${questionId}`, {
+      const response = await fetch(`${API_URL}/questions?id=${questionId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -116,33 +116,33 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
     }
   };
 
-  // const handleDeleteAllQuestions = async () => {
-  //   if (!window.confirm('Are you sure you want to delete ALL questions? This action cannot be undone.')) {
-  //     return;
-  //   }
+  const handleDeleteAllQuestions = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL questions? This action cannot be undone.')) {
+      return;
+    }
 
-  //   try {
-  //     const token = localStorage.getItem('adminToken');
-  //     const response = await fetch(`${API_URL}/questions/all`, {
-  //       method: 'DELETE',
-  //       headers: {
-  //         'Authorization': `Bearer ${token}`,
-  //         'Content-Type': 'application/json'
-  //       }
-  //     });
+    try {
+      const token = localStorage.getItem('adminToken');
+      const response = await fetch(`${API_URL}/questions/all`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-  //     if (response.ok) {
-  //       const data = await response.json();
-  //       setQuestions([]);
-  //       toast.success(`All questions deleted successfully (${data.count || 0} questions removed)`);
-  //     } else {
-  //       throw new Error('Failed to delete all questions');
-  //     }
-  //   } catch (error) {
-  //     toast.error('Failed to delete all questions');
-  //     console.error('Error:', error);
-  //   }
-  // };
+      if (response.ok) {
+        const data = await response.json();
+        setQuestions([]);
+        toast.success(`All questions deleted successfully (${data.count || 0} questions removed)`);
+      } else {
+        throw new Error('Failed to delete all questions');
+      }
+    } catch (error) {
+      toast.error('Failed to delete all questions');
+      console.error('Error:', error);
+    }
+  };
 
   return (
     <div>
@@ -236,10 +236,10 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
           </svg>
           Questions List
         </h3>
-        
+
         {questions.length > 0 && (
           <div className="mb-4 flex justify-end">
-            {/* <button
+            <button
               onClick={handleDeleteAllQuestions}
               className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors font-medium shadow-sm flex items-center gap-2"
             >
@@ -247,10 +247,10 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
                 <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
               </svg>
               Delete All Questions
-            </button> */}
+            </button>
           </div>
         )}
-        
+
         <div className="space-y-4">
           {questions.map((q, index) => (
             <div key={q._id} className="bg-white p-5 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200">
@@ -308,15 +308,15 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="font-bold text-gray-800 text-lg mb-2">
-                        <span className="text-indigo-600 mr-2">Q{index + 1}.</span> 
+                        <span className="text-indigo-600 mr-2">Q{index + 1}.</span>
                         {q.question}
                       </p>
                       <ul className="ml-4 mt-3 space-y-2">
                         {q.options.map((option, i) => (
                           <li
                             key={i}
-                            className={`p-2 rounded-lg ${i === q.correctAnswer - 1 
-                              ? 'bg-green-100 text-green-800 border border-green-200' 
+                            className={`p-2 rounded-lg ${i === q.correctAnswer - 1
+                              ? 'bg-green-100 text-green-800 border border-green-200'
                               : 'bg-gray-50 text-gray-700 border border-gray-100'}`}
                           >
                             <span className="font-medium">{i + 1}.</span>{" "}

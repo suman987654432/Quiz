@@ -20,7 +20,7 @@ const auth = (req, res, next) => {
     }
   } catch (error) {
     console.error('Auth middleware error:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: error });
   }
 };
 
