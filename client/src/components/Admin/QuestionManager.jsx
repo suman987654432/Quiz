@@ -174,15 +174,16 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
         <h3 className="text-xl font-bold mb-4 text-indigo-800">Add New Question</h3>
         <div className="mb-4">
           <label className="block mb-2 font-medium text-gray-700">Question</label>
-          <input
-            type="text"
+          <textarea
             className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
             value={newQuestion.question}
             onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
             required
             placeholder="Enter your question here"
-          />
+            rows={4} // Adjust rows as needed
+          ></textarea>
         </div>
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {newQuestion.options.map((option, index) => (
