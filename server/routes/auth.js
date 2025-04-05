@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User'); 
-const mongoose = require('mongoose'); // Add this missing import
+const mongoose = require('mongoose'); 
 
 // Admin Login
 router.post('/admin/login', async (req, res) => {
@@ -11,7 +11,7 @@ router.post('/admin/login', async (req, res) => {
 
     console.log('Received login attempt:', { email }); // Log the attempt
 
-    // Simple admin check
+   
     if (email === 'admin@example.com' && password === 'admin123') {
       console.log('Admin credentials matched'); // Log successful match
 
@@ -24,7 +24,7 @@ router.post('/admin/login', async (req, res) => {
         { expiresIn: '24h' }
       );
 
-      console.log('Token generated successfully'); // Log token generation
+      console.log('Token generated successfully'); 
 
       return res.json({
         token,
@@ -35,7 +35,7 @@ router.post('/admin/login', async (req, res) => {
       });
     }
 
-    console.log('Invalid credentials provided'); // Log invalid attempt
+    console.log('Invalid credentials provided'); 
     res.status(401).json({ message: 'Invalid credentials' });
   } catch (error) {
     console.error('Admin login error:', error);
@@ -48,7 +48,6 @@ router.post('/user/login', async (req, res) => {
   try {
     const { name, email } = req.body;
 
-    // Enhanced validation
     if (!name || !email) {
       return res.status(400).json({ message: 'Name and email are required' });
     }
@@ -57,7 +56,6 @@ router.post('/user/login', async (req, res) => {
       return res.status(400).json({ message: 'Invalid data format' });
     }
 
-    // Check if MongoDB is connected before attempting operations
     if (mongoose.connection.readyState !== 1) {
       console.error('Database not connected when attempting user login');
       return res.status(503).json({ message: 'Database service unavailable' });
@@ -67,7 +65,7 @@ router.post('/user/login', async (req, res) => {
       const existingUser = await User.findOne({ email });
 
       if (existingUser) {
-        // Check if user is already logged in
+
         if (existingUser.loggedIn) {
           console.log(`User with email ${email} is already logged in`);
           return res.status(403).json({
@@ -110,9 +108,9 @@ router.post('/user/login', async (req, res) => {
     } catch (saveError) {
       console.error('Error saving new user:', saveError);
       
-      // Check for duplicate key error (MongoDB error code 11000)
+      
       if (saveError.code === 11000) {
-        // Try to update the user's login status again (race condition handling)
+
         try {
           const user = await User.findOne({ email });
           if (user && !user.loggedIn) {
@@ -151,8 +149,7 @@ router.post('/user/logout', async (req, res) => {
     if (!email) {
       return res.status(400).json({ message: 'Email is required' });
     }
-    
-    // Check if MongoDB is connected
+
     if (mongoose.connection.readyState !== 1) {
       console.error('Database not connected when attempting user logout');
       return res.status(503).json({ message: 'Database service unavailable' });

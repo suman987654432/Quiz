@@ -24,13 +24,11 @@ const QuizInterface = () => {
       return;
     }
     
-    // Load saved answers if they exist
     const savedAnswers = localStorage.getItem('quizAnswers');
     if (savedAnswers) {
       setAnswers(JSON.parse(savedAnswers));
     }
-    
-    // Load saved current question if it exists
+
     const savedCurrentQuestion = localStorage.getItem('currentQuestion');
     if (savedCurrentQuestion) {
       setCurrentQuestion(parseInt(savedCurrentQuestion, 10));
@@ -40,23 +38,22 @@ const QuizInterface = () => {
     fetchQuizStatus();
   }, [navigate]);
 
-  // Check if timer was already started in a previous session
+
   useEffect(() => {
     const timerStarted = localStorage.getItem('timerStarted') === 'true';
     const timerStartTime = localStorage.getItem('timerStartTime');
     const savedTotalDuration = localStorage.getItem('totalDuration');
     
     if (timerStarted && timerStartTime && savedTotalDuration && timeLeft !== null) {
-      // Calculate elapsed time since timer started
+
       const startTime = parseInt(timerStartTime, 10);
       const totalDurationSeconds = parseInt(savedTotalDuration, 10);
       const now = Date.now();
       const elapsedSeconds = Math.floor((now - startTime) / 1000);
-      
-      // Calculate remaining time
+
       const remainingTime = Math.max(0, totalDurationSeconds - elapsedSeconds);
       
-      // Set timer state
+      
       setTimeLeft(remainingTime);
       setIsTimerRunning(true);
       setTotalDuration(totalDurationSeconds);
@@ -84,15 +81,14 @@ const QuizInterface = () => {
           const durationInSeconds = data.duration * 60;
           setTimeLeft(durationInSeconds);
           setTotalDuration(durationInSeconds);
-          
-          // Store total duration in localStorage
+      
           localStorage.setItem('totalDuration', durationInSeconds.toString());
         } else {
           throw new Error('Failed to fetch quiz duration');
         }
       } catch (error) {
         console.error('Error fetching quiz duration:', error);
-        // Default to 30 minutes if fetch fails
+     
         const defaultDuration = 30 * 60;
         setTimeLeft(defaultDuration);
         setTotalDuration(defaultDuration);
@@ -103,7 +99,6 @@ const QuizInterface = () => {
     fetchQuizDuration();
   }, []);
 
-  // Timer effect - only start when timeLeft is set, questions are loaded, and timer is running
   useEffect(() => {
     if (timeLeft === null || questions.length === 0 || !isTimerRunning) return;
 
@@ -119,14 +114,14 @@ const QuizInterface = () => {
     return () => clearInterval(timerRef.current);
   }, [timeLeft, questions, isTimerRunning]);
 
-  // Save current question to localStorage when it changes
+
   useEffect(() => {
     if (currentQuestion !== undefined) {
       localStorage.setItem('currentQuestion', currentQuestion.toString());
     }
   }, [currentQuestion]);
 
-  // Save answers to localStorage when they change
+ 
   useEffect(() => {
     if (Object.keys(answers).length > 0) {
       localStorage.setItem('quizAnswers', JSON.stringify(answers));
@@ -160,18 +155,7 @@ const QuizInterface = () => {
   };
 
   const handleAnswer = (answerIndex) => {
-    // Start the timer when the user clicks on an option, but only if the quiz is live
-    // and the timer hasn't already started
-    if (!isTimerRunning && isQuizLive) {
-      setIsTimerRunning(true);
-      
-      // Save timer state to localStorage
-      localStorage.setItem('timerStarted', 'true');
-      localStorage.setItem('timerStartTime', Date.now().toString());
-      
-      toast.info("Timer has started! Good luck!");
-    }
-
+ 
     setAnswers(prev => ({
       ...prev,
       [currentQuestion]: answerIndex
@@ -179,8 +163,11 @@ const QuizInterface = () => {
   };
 
   const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
+
+    if (isQuizLive && currentQuestion < questions.length - 1) {
       setCurrentQuestion(prev => prev + 1);
+    } else if (!isQuizLive) {
+      toast.warn("Please wait for the admin to activate the quiz before proceeding.");
     }
   };
 
@@ -191,7 +178,7 @@ const QuizInterface = () => {
   };
 
   const handleLogout = () => {
-    // Clear all quiz-related localStorage items
+   
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('timerStarted');
@@ -205,13 +192,13 @@ const QuizInterface = () => {
 
   const handleSubmit = async () => {
     try {
-      // Don't allow submission if the quiz is not live
+  
       if (!isQuizLive) {
         toast.error("Cannot submit quiz - the quiz has not been activated by the administrator.");
         return;
       }
 
-      // Convert answers object to array
+    
       const answersArray = Array.from(
         { length: questions.length },
         (_, i) => answers[i] !== undefined ? answers[i] : null
@@ -226,7 +213,7 @@ const QuizInterface = () => {
           answers: answersArray,
           userName: localStorage.getItem('userName'),
           userEmail: localStorage.getItem('userEmail'),
-          tabChanges: tabChangeCount // Add tab change count to submission
+          tabChanges: tabChangeCount 
         })
       });
 
@@ -240,7 +227,7 @@ const QuizInterface = () => {
         throw new Error(data.message || 'Failed to submit quiz');
       }
 
-      // Clear quiz state from localStorage upon successful submission
+     
       localStorage.removeItem('timerStarted');
       localStorage.removeItem('timerStartTime');
       localStorage.removeItem('totalDuration');
@@ -254,15 +241,14 @@ const QuizInterface = () => {
     }
   };
 
-  // Get time left color
+
   const getTimeLeftColor = () => {
     if (timeLeft === null) return 'text-gray-700';
-    if (timeLeft > 300) return 'text-green-600'; // > 5 minutes
-    if (timeLeft > 60) return 'text-yellow-600'; // > 1 minute
-    return 'text-red-600'; // < 1 minute
+    if (timeLeft > 300) return 'text-green-600'; 
+    if (timeLeft > 60) return 'text-yellow-600'; 
+    return 'text-red-600'; 
   };
 
-  // Add a timer status display
   const getTimerStatus = () => {
     if (!isQuizLive) {
       return <span className="text-red-600">Quiz not activated by admin</span>;
@@ -275,20 +261,20 @@ const QuizInterface = () => {
     return <span className={getTimeLeftColor()}>{formatTime(timeLeft)}</span>;
   };
 
-  // Add tab visibility change handler
+ 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.hidden && isTimerRunning) { // Only track tab changes after timer starts
+      if (document.hidden && isTimerRunning) { 
         tabChangeCountRef.current += 1;
         setTabChangeCount(prev => prev + 1);
         
         if (tabChangeCountRef.current === 1) {
-          // First tab change - show warning
+          
           toast.error("Warning: Changing tabs is not allowed! Your quiz will be automatically submitted if you change tabs again.", {
             autoClose: 5000
           });
         } else {
-          // Auto submit on second tab change
+     
           toast.error("Quiz submitted automatically - tab was changed multiple times!");
           handleSubmit();
         }
@@ -300,7 +286,7 @@ const QuizInterface = () => {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isTimerRunning]); // Add isTimerRunning as dependency
+  }, [isTimerRunning]); 
 
   if (error) {
     return (
@@ -461,7 +447,13 @@ const QuizInterface = () => {
           ) : (
             <button
               onClick={handleNextQuestion}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center"
+              disabled={!isQuizLive}
+              className={`${
+                isQuizLive 
+                  ? 'bg-indigo-600 hover:bg-indigo-700' 
+                  : 'bg-gray-400 cursor-not-allowed'
+              } text-white px-6 py-2 rounded-lg flex items-center`}
+              title={!isQuizLive ? "Quiz must be activated by the admin before proceeding" : ""}
             >
               Next Question
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">

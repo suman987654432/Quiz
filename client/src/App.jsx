@@ -44,7 +44,6 @@ function App() {
             }
           />
 
-          {/* Catch-all route for 404 */}
           <Route path="*" element={
             <div className="page-container">
               <div className="card p-8 max-w-md w-full">
@@ -63,7 +62,7 @@ function App() {
       </div>
       <ToastContainer 
         position="top-right" 
-        autoClose={5000}
+        autoClose={4000}
         hideProgressBar={false}
         newestOnTop
         closeOnClick

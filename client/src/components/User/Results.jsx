@@ -8,12 +8,12 @@ const Results = () => {
   const result = location.state?.result;
 
   useEffect(() => {
-    // Log out user when results page is shown
+
     const logoutUser = async () => {
       const email = localStorage.getItem('userEmail');
       const offlineMode = localStorage.getItem('offlineMode');
       
-      // Skip server logout if in offline mode
+     
       if (email && !offlineMode) {
         try {
           await fetch(`${API_URL}/user/logout`, {
@@ -36,11 +36,11 @@ const Results = () => {
   }, []);
 
   const handleLogout = () => {
-    // Clear user data
+    
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('offlineMode');
-    // Navigate to home/login page
+   
     navigate('/');
   };
 

@@ -64,7 +64,7 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
         throw new Error(`Failed to delete all results: ${data.message || response.statusText}`);
       }
 
-      // Reset results after successful deletion
+     
       setUserResults([]);
       toast.success(`All quiz results have been deleted successfully (${data.count || 0} results removed)`);
     } catch (error) {
@@ -76,10 +76,10 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
   const downloadUserResults = () => {
     if (userResults.length === 0) return;
     
-    // Apply the same filtering and sorting as in the UI
+
     const dataToDownload = filteredResults;
     
-    // Create HTML string for the Word document
+ 
     let htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -118,8 +118,7 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
           </thead>
           <tbody>
     `;
-    
-    // Add table rows for each filtered and sorted result
+
     dataToDownload.forEach(result => {
       const percentage = ((result.score / result.total) * 100).toFixed(1);
       const formattedDate = new Date(result.createdAt).toLocaleDateString('en-US', {
@@ -139,19 +138,18 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
       `;
     });
     
-    // Close the HTML document
+  
     htmlContent += `
           </tbody>
         </table>
       </body>
       </html>
     `;
-    
-    // Convert HTML to a Blob
+   
     const blob = new Blob([htmlContent], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
     
-    // Create download link with .doc extension
+
     const link = document.createElement('a');
     link.href = url;
     link.download = `quiz-results-${new Date().toISOString().slice(0,10)}.doc`;
@@ -161,7 +159,7 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
     URL.revokeObjectURL(url);
   };
 
-  // Create a filtered and sorted version of userResults
+ 
   const filteredResults = userResults.filter(result => {
     // Filter by name
     const nameMatch = searchName === '' || 

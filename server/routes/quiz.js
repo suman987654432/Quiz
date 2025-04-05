@@ -5,12 +5,12 @@ const auth = require('../middleware/auth');
 const Result = require('../models/Result');
 const QuizSettings = require('../models/QuizSettings');
 
-// Get quiz duration for users (no auth needed)
-router.get('/quiz/duration', async (req, res) => {  // Changed back to /quiz/duration
+// Get quiz duration for users 
+router.get('/quiz/duration', async (req, res) => { 
     try {
         const settings = await QuizSettings.findOne();
         if (!settings) {
-            // Create default settings if none exist
+          
             const defaultSettings = new QuizSettings({ duration: 30 });
             await defaultSettings.save();
             return res.json({ duration: 30 });
@@ -22,7 +22,7 @@ router.get('/quiz/duration', async (req, res) => {  // Changed back to /quiz/dur
     }
 });
 
-// Get all questions (admin only)
+// Get all questions
 router.get('/questions', auth, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
@@ -37,7 +37,7 @@ router.get('/questions', auth, async (req, res) => {
     }
 });
 
-// Add new question (admin only)
+// Add new question
 router.post('/questions', auth, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
@@ -46,7 +46,6 @@ router.post('/questions', auth, async (req, res) => {
 
         const { question, options, correctAnswer, timer } = req.body;
 
-        // Validate input
         if (!question || !options || correctAnswer === undefined) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
@@ -83,7 +82,7 @@ router.get('/questions/:id', auth, async (req, res) => {
     }
 });
 
-// Update a question (admin only)
+// Update a question 
 router.put('/questions/:id', auth, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
@@ -106,7 +105,7 @@ router.put('/questions/:id', auth, async (req, res) => {
     }
 });
 
-// Delete a question (admin only) using query parameter
+// Delete a question 
 router.delete('/questions', auth, async (req, res) => {
 
     try {
@@ -114,7 +113,7 @@ router.delete('/questions', auth, async (req, res) => {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-        const { id } = req.query; // Get id from query parameters
+        const { id } = req.query; 
         if (!id) {
             return res.status(400).json({ message: 'Question ID is required' });
         }
@@ -131,7 +130,7 @@ router.delete('/questions', auth, async (req, res) => {
 });
 
 
-// Delete all questions (admin only)
+// Delete all questions 
 router.delete('/questions/all', auth, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
@@ -159,7 +158,7 @@ router.post('/quiz/toggle-status', auth, async (req, res) => {
 
         const { isLive } = req.body;
 
-        // Update quiz settings with new status
+        
         let settings = await QuizSettings.findOne();
         if (!settings) {
             settings = new QuizSettings({
@@ -178,7 +177,7 @@ router.post('/quiz/toggle-status', auth, async (req, res) => {
     }
 });
 
-// Add endpoint to check if quiz is live
+
 router.get('/quiz/status', async (req, res) => {
     try {
         const settings = await QuizSettings.findOne();
@@ -192,7 +191,7 @@ router.get('/quiz/status', async (req, res) => {
     }
 });
 
-// Get active quiz questions (for users) - no auth needed
+
 router.get('/quiz/active', async (req, res) => {
     try {
         const questions = await Question.find().select('-correctAnswer');
@@ -211,8 +210,7 @@ router.get('/quiz/active', async (req, res) => {
     }
 });
 
-// Submit quiz answers - no auth needed
-router.post('/quiz/submit', async (req, res) => {  // Changed back to /quiz/submit
+router.post('/quiz/submit', async (req, res) => { 
     try {
         const { answers, userName, userEmail } = req.body;
 
@@ -220,7 +218,7 @@ router.post('/quiz/submit', async (req, res) => {  // Changed back to /quiz/subm
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
-        // Check if quiz is live before allowing submission
+        
         const settings = await QuizSettings.findOne();
         if (!settings || !settings.isLive) {
             return res.status(403).json({
@@ -241,7 +239,7 @@ router.post('/quiz/submit', async (req, res) => {  // Changed back to /quiz/subm
         const results = questions.map((q, index) => {
             const userAnswer = answers[index];
 
-            // Handle null (unanswered) differently
+           
             if (userAnswer === null) {
                 return {
                     question: q.question,
@@ -288,17 +286,17 @@ router.post('/quiz/submit', async (req, res) => {  // Changed back to /quiz/subm
     }
 });
 
-// Add this route to get all user results (admin only)
+// Add this route to get all user results 
 router.get('/quiz/results', auth, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-        // Get all unique users who have taken the quiz
+       
         const results = await Result.find()
-            .sort({ createdAt: -1 }) // Most recent first
-            .populate('user', 'name email'); // Include user details
+            .sort({ createdAt: -1 }) 
+            .populate('user', 'name email'); 
 
         res.json(results);
     } catch (error) {
@@ -378,14 +376,13 @@ router.get('/settings', auth, async (req, res) => {
     }
 });
 
-// Delete all results (admin only) - THIS ROUTE MUST COME FIRST
+// Delete all results
 router.delete('/quiz/results/all', auth, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-        // Delete all results from the database
         const deleteResult = await Result.deleteMany({});
 
         console.log('All results deleted by admin', deleteResult);
@@ -399,17 +396,16 @@ router.delete('/quiz/results/all', auth, async (req, res) => {
     }
 });
 
-// Delete a user result (admin only) - THIS MUST COME AFTER THE /all ROUTE
+
 router.delete('/quiz/results/:id', auth, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-        // Check if trying to delete a specific result
+       
         const resultId = req.params.id;
 
-        // This route should only handle specific result deletions
         if (resultId === 'all') {
             return res.status(400).json({
                 message: 'To delete all results, use the /quiz/results/all endpoint'

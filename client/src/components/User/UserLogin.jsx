@@ -10,13 +10,11 @@ const UserLogin = () => {
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [serverStatus, setServerStatus] = useState('checking'); // 'checking', 'online', 'offline'
+  const [serverStatus, setServerStatus] = useState('checking'); 
   const navigate = useNavigate();
 
-  // Check if server is reachable, but don't check for user login state
   useEffect(() => {
-    // Clear any existing user session data when arriving on login page
-    localStorage.removeItem('userName');
+    
     localStorage.removeItem('userEmail');
     localStorage.removeItem('offlineMode');
     localStorage.removeItem('timerStarted');
@@ -25,15 +23,14 @@ const UserLogin = () => {
     localStorage.removeItem('quizAnswers');
     localStorage.removeItem('currentQuestion');
     
-    // Check if server is reachable
+  
     checkServerStatus();
   }, [navigate]);
-  
-  // Function to check if the server is online
+ 
   const checkServerStatus = async () => {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
       
       const response = await fetch(`${API_URL}/quiz/duration`, {
         signal: controller.signal
@@ -47,7 +44,6 @@ const UserLogin = () => {
       clearTimeout(timeoutId);
       
       if (response.ok) {
-        // Do an additional check to verify server functionality
         try {
           const data = await response.json();
           setServerStatus('online');
@@ -71,15 +67,13 @@ const UserLogin = () => {
     if (e) e.preventDefault();
     setError('');
     setIsSubmitting(true);
-    
-    // Basic validation
+
     if (!userDetails.name.trim() || !userDetails.email.trim()) {
       setError('Name and email are required');
       setIsSubmitting(false);
       return;
     }
     
-    // If server is offline, bypass server validation and proceed directly
     if (serverStatus === 'offline' || serverStatus === 'degraded') {
       console.log(`Server is ${serverStatus}. Proceeding with local-only mode`);
       localStorage.setItem('userName', userDetails.name.trim());
@@ -92,7 +86,7 @@ const UserLogin = () => {
     try {
       console.log('Attempting to login with:', userDetails);
       
-      // Use safer fetch with automatic retry logic
+      
       let response;
       let retryCount = 0;
       const maxRetries = 2;
@@ -100,7 +94,7 @@ const UserLogin = () => {
       while (retryCount <= maxRetries) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+          const timeoutId = setTimeout(() => controller.abort(), 8000); 
           
           response = await fetch(`${API_URL}/user/login`, {
             method: 'POST',
@@ -115,29 +109,28 @@ const UserLogin = () => {
           });
           
           clearTimeout(timeoutId);
-          break; // If we get here without errors, exit the retry loop
+          break; 
         } catch (fetchError) {
           retryCount++;
           if (retryCount > maxRetries || fetchError.name !== 'AbortError') {
-            throw fetchError; // Rethrow if max retries reached or not a timeout
+            throw fetchError;
           }
           console.log(`Request timed out, retry attempt ${retryCount}/${maxRetries}`);
-          await new Promise(r => setTimeout(r, 1000)); // Wait 1s before retry
+          await new Promise(r => setTimeout(r, 1000)); 
         }
       }
       
-      // Handle all 4xx and 5xx errors here
+    
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Unknown error occurred' }));
         
-        // Special handling for "already logged in" error
         if (response.status === 403 && errorData.alreadyLoggedIn) {
           setError('This email is already logged in and taking the quiz. Please use a different email or try again later.');
           setIsSubmitting(false);
           return;
         }
         
-        // Handle other error responses
+      
         if (response.status === 500) {
           console.error('Server returned 500 Internal Server Error', {
             url: `${API_URL}/user/login`,
@@ -145,7 +138,7 @@ const UserLogin = () => {
             statusText: response.statusText
           });
           
-          // Try to get more details about the error if possible
+     
           const errorDetails = await response.text().catch(e => 'No response body');
           console.error('Error response body:', errorDetails);
           
@@ -160,16 +153,15 @@ const UserLogin = () => {
       const data = await response.json();
       console.log('Login response:', data);
 
-      // Both of these are considered successful login scenarios
       localStorage.setItem('userName', userDetails.name.trim());
       localStorage.setItem('userEmail', userDetails.email.trim());
-      localStorage.removeItem('offlineMode'); // Clear offline mode if it was set previously
+      localStorage.removeItem('offlineMode');
       navigate('/start');
       
     } catch (error) {
       console.error('Login error:', error);
       
-      // If the error indicates server issues, allow the user to continue in offline mode
+   
       if (error.message.includes('timeout') || 
           error.message.includes('Network Error') || 
           error.message.includes('Failed to fetch') ||
@@ -179,7 +171,7 @@ const UserLogin = () => {
           error.name === 'AbortError' ||
           error.status >= 500) {
           
-        // For 500 errors, offer a retry option along with continue offline
+       
         if (error.message.includes('internal error')) {
           setError(`Server error: ${error.message}. Would you like to retry or continue offline?`);
           setServerStatus('degraded');

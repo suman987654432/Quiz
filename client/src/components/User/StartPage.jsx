@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 const StartPage = () => {
   const navigate = useNavigate();
 
-  // Check if user is logged in
+ 
   useEffect(() => {
     const userName = localStorage.getItem('userName');
     const userEmail = localStorage.getItem('userEmail');
@@ -14,6 +14,10 @@ const StartPage = () => {
   }, [navigate]);
 
   const handleStartQuiz = () => {
+ 
+    localStorage.setItem('timerStarted', 'true');
+    localStorage.setItem('timerStartTime', Date.now().toString());
+    
     navigate('/quiz');
   };
 
