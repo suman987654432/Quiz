@@ -61,80 +61,41 @@ router.post('/user/login', async (req, res) => {
       return res.status(503).json({ message: 'Database service unavailable' });
     }
 
-    try {
-      const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
-      if (existingUser) {
-
-        if (existingUser.loggedIn) {
-          console.log(`User with email ${email} is already logged in`);
-          return res.status(403).json({
-            message: 'User already logged in',
-            alreadyLoggedIn: true
-          });
-        }
-
-        // Update login status
-        existingUser.loggedIn = true;
-        existingUser.lastLogin = new Date();
-        await existingUser.save();
-        
-      
-        return res.status(200).json({
-          message: 'Login successful',
-          user: { name: existingUser.name, email: existingUser.email }
+    if (existingUser) {
+      if (existingUser.loggedIn) {
+        console.log(`User with email ${email} is already logged in`);
+        return res.status(403).json({
+          message: 'User already logged in',
+          alreadyLoggedIn: true
         });
       }
-    } catch (dbError) {
-      console.error('Database query error:', dbError);
-      return res.status(500).json({ message: 'Database query failed', detail: dbError.message });
+
+      // Update login status
+      existingUser.loggedIn = true;
+      existingUser.lastLogin = new Date();
+      await existingUser.save();
+
+      return res.status(200).json({
+        message: 'Login successful',
+        user: { name: existingUser.name, email: existingUser.email }
+      });
     }
 
-    // Proceed with user creation
-    try {
-      const newUser = new User({ 
-        name, 
-        email, 
-        loggedIn: true,
-        lastLogin: new Date()
-      });
-      await newUser.save();
-      
-      console.log(`New user created: ${name} (${email})`);
-      res.status(201).json({
-        message: 'User created successfully',
-        user: { name, email }
-      });
-    } catch (saveError) {
-      console.error('Error saving new user:', saveError);
-      
-      
-      if (saveError.code === 11000) {
+    // Create a new user if not found
+    const newUser = new User({
+      name,
+      email,
+      loggedIn: true,
+      lastLogin: new Date()
+    });
+    await newUser.save();
 
-        try {
-          const user = await User.findOne({ email });
-          if (user && !user.loggedIn) {
-            user.loggedIn = true;
-            user.lastLogin = new Date();
-            await user.save();
-            
-            return res.status(200).json({
-              message: 'Login successful',
-              user: { name: user.name, email: user.email }
-            });
-          } else if (user && user.loggedIn) {
-            return res.status(403).json({
-              message: 'User already logged in',
-              alreadyLoggedIn: true
-            });
-          }
-        } catch (err) {
-          console.error('Error handling duplicate key:', err);
-        }
-      }
-      
-      return res.status(500).json({ message: 'Failed to create user', detail: saveError.message });
-    }
+    res.status(201).json({
+      message: 'User created successfully',
+      user: { name, email }
+    });
   } catch (error) {
     console.error('User login error:', error);
     res.status(500).json({ message: 'Server error', detail: error.message });
