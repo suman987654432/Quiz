@@ -29,6 +29,9 @@ const resultSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
-});
+}, { timestamps: true });
 
-module.exports = mongoose.model('Result', resultSchema); 
+// Ensure unique results for the same user within a short period
+resultSchema.index({ 'user.email': 1, createdAt: 1 }, { unique: true });
+
+module.exports = mongoose.model('Result', resultSchema);

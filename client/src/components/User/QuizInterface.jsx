@@ -16,6 +16,7 @@ const QuizInterface = () => {
   const navigate = useNavigate();
   const [tabChangeCount, setTabChangeCount] = useState(0);
   const tabChangeCountRef = useRef(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const userName = localStorage.getItem('userName');
@@ -191,6 +192,9 @@ const QuizInterface = () => {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return; // Prevent multiple submissions
+    setIsSubmitting(true);
+
     try {
   
       if (!isQuizLive) {
@@ -238,6 +242,8 @@ const QuizInterface = () => {
     } catch (err) {
       console.error('Submit error:', err);
       toast.error("There was a problem submitting your quiz: " + err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -431,12 +437,12 @@ const QuizInterface = () => {
           {currentQuestion === questions.length - 1 ? (
             <button
               onClick={handleSubmit}
-              disabled={!isQuizLive}
+              disabled={!isQuizLive || isSubmitting}
               className={`${
                 isQuizLive 
                   ? 'bg-green-600 hover:bg-green-700' 
                   : 'bg-gray-400 cursor-not-allowed'
-              } text-white px-6 py-2 rounded-lg flex items-center`}
+              } text-white px-6 py-2 rounded-lg flex items-center ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
               title={!isQuizLive ? "Quiz must be activated by the admin before submission" : ""}
             >
               Submit Quiz

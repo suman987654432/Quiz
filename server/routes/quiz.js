@@ -227,6 +227,16 @@ router.post('/quiz/submit', async (req, res) => {
             });
         }
 
+        // Check if the result already exists for the user
+        const existingResult = await Result.findOne({
+            'user.email': userEmail,
+            createdAt: { $gte: new Date(Date.now() - 1000 * 60 * 5) } // Prevent duplicate submissions within 5 minutes
+        });
+
+        if (existingResult) {
+            return res.status(400).json({ message: 'Duplicate result submission detected' });
+        }
+
         // Get all questions
         const questions = await Question.find();
 
