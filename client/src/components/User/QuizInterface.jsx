@@ -3,6 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../../config/config';
 import { toast } from 'react-toastify';
 
+// Import components
+import QuestionNavigation from './QuizComponents/QuestionNavigation';
+import QuestionDisplay from './QuizComponents/QuestionDisplay';
+import TimerDisplay from './QuizComponents/TimerDisplay';
+import QuizControls from './QuizComponents/QuizControls';
+import ProgressBar from './QuizComponents/ProgressBar';
+import ErrorDisplay from './QuizComponents/ErrorDisplay';
+import LoadingDisplay from './QuizComponents/LoadingDisplay';
+
 const QuizInterface = () => {
   const [questions, setQuestions] = useState([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -129,13 +138,6 @@ const QuizInterface = () => {
     }
   }, [answers]);
 
-  const formatTime = (seconds) => {
-    if (seconds === null) return '--:--';
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-  };
-
   const fetchQuestions = async () => {
     try {
       const response = await fetch(`${API_URL}/quiz/active`);
@@ -156,7 +158,12 @@ const QuizInterface = () => {
   };
 
   const handleAnswer = (answerIndex) => {
- 
+    if (!isTimerRunning && isQuizLive) {
+      setIsTimerRunning(true);
+      localStorage.setItem('timerStarted', 'true');
+      localStorage.setItem('timerStartTime', Date.now().toString());
+    }
+    
     setAnswers(prev => ({
       ...prev,
       [currentQuestion]: answerIndex
@@ -164,7 +171,6 @@ const QuizInterface = () => {
   };
 
   const handleNextQuestion = () => {
-
     if (isQuizLive && currentQuestion < questions.length - 1) {
       setCurrentQuestion(prev => prev + 1);
     } else if (!isQuizLive) {
@@ -179,7 +185,6 @@ const QuizInterface = () => {
   };
 
   const handleLogout = () => {
-   
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
     localStorage.removeItem('timerStarted');
@@ -196,13 +201,11 @@ const QuizInterface = () => {
     setIsSubmitting(true);
 
     try {
-  
       if (!isQuizLive) {
         toast.error("Cannot submit quiz - the quiz has not been activated by the administrator.");
         return;
       }
 
-    
       const answersArray = Array.from(
         { length: questions.length },
         (_, i) => answers[i] !== undefined ? answers[i] : null
@@ -231,7 +234,6 @@ const QuizInterface = () => {
         throw new Error(data.message || 'Failed to submit quiz');
       }
 
-     
       localStorage.removeItem('timerStarted');
       localStorage.removeItem('timerStartTime');
       localStorage.removeItem('totalDuration');
@@ -247,27 +249,6 @@ const QuizInterface = () => {
     }
   };
 
-
-  const getTimeLeftColor = () => {
-    if (timeLeft === null) return 'text-gray-700';
-    if (timeLeft > 300) return 'text-green-600'; 
-    if (timeLeft > 60) return 'text-yellow-600'; 
-    return 'text-red-600'; 
-  };
-
-  const getTimerStatus = () => {
-    if (!isQuizLive) {
-      return <span className="text-red-600">Quiz not activated by admin</span>;
-    }
-    
-    if (!isTimerRunning) {
-      return <span className="text-amber-600">Click any option to start the timer</span>;
-    }
-    
-    return <span className={getTimeLeftColor()}>{formatTime(timeLeft)}</span>;
-  };
-
- 
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden && isTimerRunning) { 
@@ -275,12 +256,10 @@ const QuizInterface = () => {
         setTabChangeCount(prev => prev + 1);
         
         if (tabChangeCountRef.current === 1) {
-          
           toast.error("Warning: Changing tabs is not allowed! Your quiz will be automatically submitted if you change tabs again.", {
             autoClose: 5000
           });
         } else {
-     
           toast.error("Quiz submitted automatically - tab was changed multiple times!");
           handleSubmit();
         }
@@ -292,51 +271,14 @@ const QuizInterface = () => {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [isTimerRunning]); 
+  }, [isTimerRunning]);
 
   if (error) {
-    return (
-      <div className="page-container">
-        <div className="card p-8 max-w-md w-full animate-fadeIn">
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-          </div>
-          <h2 className="text-2xl font-bold text-center mb-4">Error Loading Quiz</h2>
-          <p className="text-gray-700 mb-6 text-center">{error}</p>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <button
-              onClick={handleSubmit}
-              className="btn-primary flex-1"
-            >
-              Submit Anyway
-            </button>
-            <button
-              onClick={handleLogout}
-              className="btn-neutral flex-1"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return <ErrorDisplay error={error} handleSubmit={handleSubmit} handleLogout={handleLogout} />;
   }
 
   if (questions.length === 0 || timeLeft === null) {
-    return (
-      <div className="min-h-screen flex justify-center items-center bg-gradient-to-br from-indigo-50 to-blue-50">
-        <div className="text-center">
-          <div className="mb-4">
-            <div className="w-16 h-16 border-t-4 border-b-4 border-indigo-500 rounded-full animate-spin mx-auto"></div>
-          </div>
-          <p className="text-indigo-800 font-medium">Loading quiz questions...</p>
-        </div>
-      </div>
-    );
+    return <LoadingDisplay />;
   }
 
   return (
@@ -363,9 +305,11 @@ const QuizInterface = () => {
               </span>
               <span className="ml-2 text-indigo-800 font-medium">Question {currentQuestion + 1} of {questions.length}</span>
             </div>
-            <div className={`font-bold text-xl`}>
-              {getTimerStatus()}
-            </div>
+            <TimerDisplay 
+              timeLeft={timeLeft} 
+              isQuizLive={isQuizLive} 
+              isTimerRunning={isTimerRunning}
+            />
           </div>
           
           {!isQuizLive && (
@@ -383,98 +327,37 @@ const QuizInterface = () => {
         
         <div className="question-section mb-6">
           <div className="bg-white rounded-lg p-6 shadow-sm">
-            <div className="question-text mb-4">
-              <h2 className="text-xl font-semibold text-gray-800 whitespace-pre-wrap break-words leading-relaxed">
-                {questions[currentQuestion].question}
-              </h2>
-            </div>
+            <QuestionNavigation 
+              questions={questions} 
+              currentQuestion={currentQuestion} 
+              setCurrentQuestion={setCurrentQuestion}
+              answers={answers}
+            />
             
-            <div className="options-grid space-y-3">
-              {questions[currentQuestion].options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswer(index)}
-                  className={`w-full p-4 text-left rounded-lg border transition-colors duration-200 hover:shadow-sm ${
-                    answers[currentQuestion] === index
-                      ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-500'
-                      : 'bg-gray-50 border-gray-200 hover:bg-white'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <div className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-medium ${
-                      answers[currentQuestion] === index
-                        ? 'bg-indigo-600 text-white'
-                        : 'bg-gray-200 text-gray-700'
-                    }`}>
-                      {String.fromCharCode(65 + index)}
-                    </div>
-                    <span className="text-base text-gray-700 whitespace-pre-wrap break-words">
-                      {option}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
+            <QuestionDisplay 
+              question={questions[currentQuestion].question}
+              options={questions[currentQuestion].options}
+              currentIndex={currentQuestion}
+              answers={answers}
+              handleAnswer={handleAnswer}
+            />
           </div>
         </div>
         
-        <div className="flex justify-between">
-          <button
-            onClick={handlePreviousQuestion}
-            className={`px-4 py-2 rounded-lg flex items-center ${
-              currentQuestion === 0
-                ? 'text-gray-400 cursor-not-allowed'
-                : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50'
-            }`}
-            disabled={currentQuestion === 0}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L4.414 9H17a1 1 0 110 2H4.414l5.293 5.293a1 1 0 010 1.414z" clipRule="evenodd" />
-            </svg>
-            Previous
-          </button>
-          
-          {currentQuestion === questions.length - 1 ? (
-            <button
-              onClick={handleSubmit}
-              disabled={!isQuizLive || isSubmitting}
-              className={`${
-                isQuizLive 
-                  ? 'bg-green-600 hover:bg-green-700' 
-                  : 'bg-gray-400 cursor-not-allowed'
-              } text-white px-6 py-2 rounded-lg flex items-center ${isSubmitting ? 'cursor-not-allowed opacity-50' : ''}`}
-              title={!isQuizLive ? "Quiz must be activated by the admin before submission" : ""}
-            >
-              Submit Quiz
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-            </button>
-          ) : (
-            <button
-              onClick={handleNextQuestion}
-              disabled={!isQuizLive}
-              className={`${
-                isQuizLive 
-                  ? 'bg-indigo-600 hover:bg-indigo-700' 
-                  : 'bg-gray-400 cursor-not-allowed'
-              } text-white px-6 py-2 rounded-lg flex items-center`}
-              title={!isQuizLive ? "Quiz must be activated by the admin before proceeding" : ""}
-            >
-              Next Question
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
-              </svg>
-            </button>
-          )}
-        </div>
+        <QuizControls 
+          currentQuestion={currentQuestion}
+          questionsLength={questions.length}
+          handlePreviousQuestion={handlePreviousQuestion}
+          handleNextQuestion={handleNextQuestion}
+          handleSubmit={handleSubmit}
+          isQuizLive={isQuizLive}
+          isSubmitting={isSubmitting}
+        />
         
-        <div className="w-full bg-white rounded-full h-2 overflow-hidden">
-          <div
-            className="bg-indigo-600 h-2 transition-all duration-300"
-            style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
-          ></div>
-        </div>
+        <ProgressBar 
+          currentQuestion={currentQuestion} 
+          totalQuestions={questions.length} 
+        />
       </div>
     </div>
   );

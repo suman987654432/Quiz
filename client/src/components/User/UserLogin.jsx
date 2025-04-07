@@ -9,9 +9,14 @@ const UserLogin = () => {
     email: ''
   });
   const [error, setError] = useState('');
+  const [nameError, setNameError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverStatus, setServerStatus] = useState('checking'); 
   const navigate = useNavigate();
+
+
+  const nameRegex = /^[A-Za-z\s]+$/;
+
 
   useEffect(() => {
     
@@ -63,9 +68,44 @@ const UserLogin = () => {
     }
   };
 
+  
+  const handleNameChange = (e) => {
+    const value = e.target.value;
+    
+    if (!value.trim()) {
+      setNameError('');
+    }
+    else if (!nameRegex.test(value)) {
+      setNameError('Only alphabetic characters (A-Z, a-z) are allowed');
+    } else {
+      setNameError('');
+    }
+    
+    setUserDetails({ ...userDetails, name: value });
+  };
+
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     setError('');
+    
+    if (!userDetails.name.trim()) {
+      setNameError('Name is required');
+      setIsSubmitting(false);
+      return;
+    }
+    
+    if (!nameRegex.test(userDetails.name)) {
+      setNameError('Only alphabetic characters (A-Z, a-z) are allowed');
+      setIsSubmitting(false);
+      return;
+    }
+    
+    if (!userDetails.email.trim()) {
+      setError('Email is required');
+      setIsSubmitting(false);
+      return;
+    }
+    
     setIsSubmitting(true);
 
     if (!userDetails.name.trim() || !userDetails.email.trim()) {
@@ -188,6 +228,11 @@ const UserLogin = () => {
   };
   
   const continueOffline = () => {
+    if (!nameRegex.test(userDetails.name)) {
+      setNameError('Only alphabetic characters (A-Z, a-z) are allowed');
+      return;
+    }
+    
     localStorage.setItem('userName', userDetails.name.trim());
     localStorage.setItem('userEmail', userDetails.email.trim());
     localStorage.setItem('offlineMode', 'true');
@@ -249,12 +294,15 @@ const UserLogin = () => {
               <label className="form-label">Full Name</label>
               <input
                 type="text"
-                className="form-input"
+                className={`form-input ${nameError ? 'border-red-500' : ''}`}
                 value={userDetails.name}
-                onChange={(e) => setUserDetails({ ...userDetails, name: e.target.value })}
-                placeholder="Enter your name"
+                onChange={handleNameChange}
+                placeholder="Enter your name (letters only)"
                 required
               />
+              {nameError && (
+                <p className="mt-1 text-sm text-red-600">{nameError}</p>
+              )}
             </div>
             <div>
               <label className="form-label">Email Address</label>
@@ -269,9 +317,9 @@ const UserLogin = () => {
             </div>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || nameError}
               className={`btn-primary w-full py-3 flex justify-center items-center ${
-                isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                (isSubmitting || nameError) ? 'opacity-70 cursor-not-allowed' : ''
               }`}
             >
               {isSubmitting ? (
