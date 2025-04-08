@@ -7,6 +7,8 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
   const [searchEmail, setSearchEmail] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [sortOrder, setSortOrder] = useState('score_asc');
+  const [currentPage, setCurrentPage] = useState(1);
+  const resultsPerPage = 5;
 
   const handleDeleteResult = async (resultId) => {
     if (!window.confirm('Are you sure you want to delete this result?')) {
@@ -186,6 +188,26 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
       return new Date(b.createdAt) - new Date(a.createdAt); // Newest first
     }
   });
+  
+  // Pagination logic
+  const indexOfLastResult = currentPage * resultsPerPage;
+  const indexOfFirstResult = indexOfLastResult - resultsPerPage;
+  const currentResults = filteredResults.slice(indexOfFirstResult, indexOfLastResult);
+  const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
+
+  // Change page
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const goToNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
+  const goToPrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
+
+  // Reset filters should also reset pagination
+  const resetFilters = () => {
+    setSearchName('');
+    setSearchEmail('');
+    setSearchDate('');
+    setSortOrder('score_asc');
+    setCurrentPage(1);
+  };
 
   return (
     <div>
@@ -271,12 +293,7 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
         </div>
         <div className="mt-4 flex justify-end">
           <button
-            onClick={() => {
-              setSearchName('');
-              setSearchEmail('');
-              setSearchDate('');
-              setSortOrder('score_asc');
-            }}
+            onClick={resetFilters}
             className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors font-medium flex items-center gap-2"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -301,76 +318,148 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200">
-          <table className="min-w-full bg-white">
-            <thead className="bg-indigo-50 text-indigo-800">
-              <tr>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
-                  User
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
-                  Score
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
-                  Date
-                </th>
-                <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredResults.map((result, index) => (
-                <tr key={index} className="hover:bg-indigo-50 transition-colors duration-150">
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{result.user.name}</div>
-                    <div className="text-xs sm:text-sm text-gray-500">{result.user.email}</div>
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                    <div className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
-                      {result.score} / {result.total}
-                      <span className="ml-1 sm:ml-2 px-1 sm:px-2 py-1 rounded-full bg-blue-200 text-xs">
-                        {((result.score / result.total) * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
-                    {new Date(result.createdAt).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </td>
-                  <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex gap-2 sm:gap-3">
-                      <button
-                        onClick={() => onViewDetails(result)}
-                        className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 p-2 rounded-full transition-colors flex items-center"
-                        title="View details"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteResult(result._id)}
-                        className="text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded-full transition-colors flex items-center"
-                        title="Delete result"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
+        <>
+          <div className="overflow-x-auto bg-white rounded-xl shadow-lg border border-gray-200">
+            <table className="min-w-full bg-white">
+              <thead className="bg-indigo-50 text-indigo-800">
+                <tr>
+                  <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
+                    User
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
+                    Score
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
+                    Date
+                  </th>
+                  <th className="px-3 sm:px-6 py-3 sm:py-4 text-left text-sm font-medium uppercase tracking-wider border-b">
+                    Actions
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {currentResults.map((result, index) => (
+                  <tr key={index} className="hover:bg-indigo-50 transition-colors duration-150">
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium text-gray-900">{result.user.name}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{result.user.email}</div>
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
+                      <div className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-blue-100 text-blue-800">
+                        {result.score} / {result.total}
+                        <span className="ml-1 sm:ml-2 px-1 sm:px-2 py-1 rounded-full bg-blue-200 text-xs">
+                          {((result.score / result.total) * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-500">
+                      {new Date(result.createdAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </td>
+                    <td className="px-3 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex gap-2 sm:gap-3">
+                        <button
+                          onClick={() => onViewDetails(result)}
+                          className="text-indigo-600 hover:text-indigo-900 hover:bg-indigo-50 p-2 rounded-full transition-colors flex items-center"
+                          title="View details"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteResult(result._id)}
+                          className="text-red-600 hover:text-red-900 hover:bg-red-50 p-2 rounded-full transition-colors flex items-center"
+                          title="Delete result"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-6">
+              <nav className="flex items-center gap-1">
+                <button 
+                  onClick={goToPrevPage}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === 1 
+                      ? 'text-gray-400 cursor-not-allowed' 
+                      : 'text-indigo-600 hover:bg-indigo-50'
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
+                
+                {[...Array(totalPages)].map((_, idx) => {
+                  const pageNum = idx + 1;
+                  // Show limited page numbers with ellipsis for better UI
+                  if (
+                    pageNum === 1 || 
+                    pageNum === totalPages || 
+                    (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                  ) {
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => paginate(pageNum)}
+                        className={`px-3 py-1 rounded-md ${
+                          currentPage === pageNum
+                            ? 'bg-indigo-600 text-white'
+                            : 'text-indigo-600 hover:bg-indigo-50'
+                        }`}
+                      >
+                        {pageNum}
+                      </button>
+                    );
+                  } else if (
+                    (pageNum === currentPage - 2 && pageNum > 1) || 
+                    (pageNum === currentPage + 2 && pageNum < totalPages)
+                  ) {
+                    return <span key={idx} className="px-1">...</span>;
+                  }
+                  return null;
+                })}
+                
+                <button 
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-1 rounded-md ${
+                    currentPage === totalPages 
+                      ? 'text-gray-400 cursor-not-allowed' 
+                      : 'text-indigo-600 hover:bg-indigo-50'
+                  }`}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                  </svg>
+                </button>
+              </nav>
+            </div>
+          )}
+          
+          {/* Results count indicator */}
+          <div className="text-center text-sm text-gray-500 mt-4">
+            Showing {indexOfFirstResult + 1} to {Math.min(indexOfLastResult, filteredResults.length)} of {filteredResults.length} results
+          </div>
+        </>
       )}
     </div>
   );

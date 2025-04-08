@@ -11,7 +11,7 @@ const QuestionNavigation = ({ questions, currentQuestion, setCurrentQuestion, an
             ${currentQuestion === index 
               ? 'bg-indigo-600 text-white' 
               : answers[index] !== undefined 
-                ? 'bg-indigo-100 text-indigo-700 border border-indigo-300' 
+                ? 'bg-indigo-500 text-indigo-700 border border-indigo-300' 
                 : 'bg-gray-100 text-gray-700 border border-gray-200 hover:bg-gray-200'}`}
         >
           {index + 1}
