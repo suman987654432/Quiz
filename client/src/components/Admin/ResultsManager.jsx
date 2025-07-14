@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { API_URL } from '../../config/config';
 import { toast } from 'react-toastify';
 
@@ -29,7 +29,6 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
         throw new Error('Failed to delete result');
       }
 
-      // Remove the deleted result from the state
       setUserResults(userResults.filter(result => result._id !== resultId));
       toast.success('Result deleted successfully');
     } catch (err) {
@@ -66,7 +65,6 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
         throw new Error(`Failed to delete all results: ${data.message || response.statusText}`);
       }
 
-     
       setUserResults([]);
       toast.success(`All quiz results have been deleted successfully (${data.count || 0} results removed)`);
     } catch (error) {
@@ -77,11 +75,9 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
 
   const downloadUserResults = () => {
     if (userResults.length === 0) return;
-    
 
     const dataToDownload = filteredResults;
-    
- 
+
     let htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -135,22 +131,20 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
           <td>${result.user.email}</td>
           <td>${result.score}/${result.total}</td>
           <td class="percentage">${percentage}%</td>
-          <td>${formattedDate}</td>
+          <td>${formattedDate}</td>td>
         </tr>
       `;
     });
-    
-  
+
     htmlContent += `
           </tbody>
         </table>
       </body>
       </html>
     `;
-   
+
     const blob = new Blob([htmlContent], { type: 'application/msword' });
     const url = URL.createObjectURL(blob);
-    
 
     const link = document.createElement('a');
     link.href = url;
@@ -161,46 +155,35 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
     URL.revokeObjectURL(url);
   };
 
- 
   const filteredResults = userResults.filter(result => {
-    // Filter by name
     const nameMatch = searchName === '' || 
       result.user.name.toLowerCase().includes(searchName.toLowerCase());
-    
-    // Filter by email
     const emailMatch = searchEmail === '' || 
       result.user.email.toLowerCase().includes(searchEmail.toLowerCase());
-    
-    // Filter by date
     const resultDate = new Date(result.createdAt).toISOString().split('T')[0];
     const dateMatch = searchDate === '' || resultDate === searchDate;
-    
     return nameMatch && emailMatch && dateMatch;
   }).sort((a, b) => {
-    // Sort by score or date based on sortOrder
     if (sortOrder === 'score_asc') {
-      return a.score - b.score; // Ascending score
+      return a.score - b.score;
     } else if (sortOrder === 'score_desc') {
-      return b.score - a.score; // Descending score
+      return b.score - a.score;
     } else if (sortOrder === 'asc') {
-      return new Date(a.createdAt) - new Date(b.createdAt); // Oldest first
+      return new Date(a.createdAt) - new Date(b.createdAt);
     } else {
-      return new Date(b.createdAt) - new Date(a.createdAt); // Newest first
+      return new Date(b.createdAt) - new Date(a.createdAt);
     }
   });
-  
-  // Pagination logic
+
   const indexOfLastResult = currentPage * resultsPerPage;
   const indexOfFirstResult = indexOfLastResult - resultsPerPage;
   const currentResults = filteredResults.slice(indexOfFirstResult, indexOfLastResult);
   const totalPages = Math.ceil(filteredResults.length / resultsPerPage);
 
-  // Change page
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   const goToNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
   const goToPrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
 
-  // Reset filters should also reset pagination
   const resetFilters = () => {
     setSearchName('');
     setSearchEmail('');
@@ -244,7 +227,6 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
         </div>
       </div>
 
-      {/* Search and Filter Section */}
       <div className="bg-white p-4 sm:p-5 rounded-xl shadow-md mb-6 border border-gray-200">
         <h3 className="text-lg font-semibold mb-4 text-indigo-700">Search and Filter</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -304,7 +286,6 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
         </div>
       </div>
 
-      {/* Results display */}
       {filteredResults.length === 0 ? (
         <div className="bg-white p-4 sm:p-8 rounded-xl text-center">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -389,8 +370,7 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
               </tbody>
             </table>
           </div>
-          
-          {/* Pagination */}
+
           {totalPages > 1 && (
             <div className="flex justify-center mt-6">
               <nav className="flex items-center gap-1">
@@ -410,7 +390,6 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
                 
                 {[...Array(totalPages)].map((_, idx) => {
                   const pageNum = idx + 1;
-                  // Show limited page numbers with ellipsis for better UI
                   if (
                     pageNum === 1 || 
                     pageNum === totalPages || 
@@ -454,8 +433,7 @@ const ResultsManager = ({ userResults, setUserResults, onViewDetails }) => {
               </nav>
             </div>
           )}
-          
-          {/* Results count indicator */}
+
           <div className="text-center text-sm text-gray-500 mt-4">
             Showing {indexOfFirstResult + 1} to {Math.min(indexOfLastResult, filteredResults.length)} of {filteredResults.length} results
           </div>

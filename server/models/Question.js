@@ -5,6 +5,11 @@ const questionSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  subject: {
+    type: String,
+    required: true,
+    default: 'General'
+  },
   options: {
     type: [String],
     required: true,
@@ -27,4 +32,4 @@ const questionSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('Question', questionSchema); 
+module.exports = mongoose.model('Question', questionSchema);

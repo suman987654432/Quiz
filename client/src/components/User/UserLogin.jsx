@@ -2,24 +2,20 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_URL } from '../../config/config';
 
-
 const UserLogin = () => {
   const [userDetails, setUserDetails] = useState({
     name: '',
-    email: ''
+    email: '',
+    subject: 'General'
   });
-  const [error, setError] = useState('');
   const [nameError, setNameError] = useState('');
+  const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [serverStatus, setServerStatus] = useState('checking'); 
+  const [serverStatus, setServerStatus] = useState('checking');
+  const nameRegex = /^[A-Za-z\s]+$/;
   const navigate = useNavigate();
 
-
-  const nameRegex = /^[A-Za-z\s]+$/;
-
-
   useEffect(() => {
-    
     localStorage.removeItem('userEmail');
     localStorage.removeItem('offlineMode');
     localStorage.removeItem('timerStarted');
@@ -27,16 +23,15 @@ const UserLogin = () => {
     localStorage.removeItem('totalDuration');
     localStorage.removeItem('quizAnswers');
     localStorage.removeItem('currentQuestion');
-    
-  
+
     checkServerStatus();
   }, [navigate]);
- 
+
   const checkServerStatus = async () => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000);
-      
+
       const response = await fetch(`${API_URL}/quiz/duration`, {
         signal: controller.signal
       }).catch(err => {
@@ -45,9 +40,9 @@ const UserLogin = () => {
         }
         throw err;
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (response.ok) {
         try {
           const data = await response.json();
@@ -68,44 +63,42 @@ const UserLogin = () => {
     }
   };
 
-  
   const handleNameChange = (e) => {
     const value = e.target.value;
-    
+
     if (!value.trim()) {
       setNameError('');
-    }
-    else if (!nameRegex.test(value)) {
+    } else if (!nameRegex.test(value)) {
       setNameError('Only alphabetic characters (A-Z, a-z) are allowed');
     } else {
       setNameError('');
     }
-    
+
     setUserDetails({ ...userDetails, name: value });
   };
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     setError('');
-    
+
     if (!userDetails.name.trim()) {
       setNameError('Name is required');
       setIsSubmitting(false);
       return;
     }
-    
+
     if (!nameRegex.test(userDetails.name)) {
       setNameError('Only alphabetic characters (A-Z, a-z) are allowed');
       setIsSubmitting(false);
       return;
     }
-    
+
     if (!userDetails.email.trim()) {
       setError('Email is required');
       setIsSubmitting(false);
       return;
     }
-    
+
     setIsSubmitting(true);
 
     if (!userDetails.name.trim() || !userDetails.email.trim()) {
@@ -113,29 +106,29 @@ const UserLogin = () => {
       setIsSubmitting(false);
       return;
     }
-    
+
     if (serverStatus === 'offline' || serverStatus === 'degraded') {
       console.log(`Server is ${serverStatus}. Proceeding with local-only mode`);
       localStorage.setItem('userName', userDetails.name.trim());
       localStorage.setItem('userEmail', userDetails.email.trim());
+      localStorage.setItem('userSubject', userDetails.subject);
       localStorage.setItem('offlineMode', 'true');
       navigate('/start');
       return;
     }
-    
+
     try {
       console.log('Attempting to login with:', userDetails);
-      
-      
+
       let response;
       let retryCount = 0;
       const maxRetries = 2;
-      
+
       while (retryCount <= maxRetries) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 8000); 
-          
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
+
           response = await fetch(`${API_URL}/user/login`, {
             method: 'POST',
             headers: {
@@ -143,75 +136,72 @@ const UserLogin = () => {
             },
             body: JSON.stringify({
               name: userDetails.name.trim(),
-              email: userDetails.email.trim()
+              email: userDetails.email.trim(),
+              subject: 'General'
             }),
             signal: controller.signal
           });
-          
+
           clearTimeout(timeoutId);
-          break; 
+          break;
         } catch (fetchError) {
           retryCount++;
           if (retryCount > maxRetries || fetchError.name !== 'AbortError') {
             throw fetchError;
           }
           console.log(`Request timed out, retry attempt ${retryCount}/${maxRetries}`);
-          await new Promise(r => setTimeout(r, 1000)); 
+          await new Promise(r => setTimeout(r, 1000));
         }
       }
-      
-    
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Unknown error occurred' }));
-        
+
         if (response.status === 403 && errorData.alreadyLoggedIn) {
           setError('This email is already logged in and taking the quiz. Please use a different email or try again later.');
           setIsSubmitting(false);
           return;
         }
-        
-      
+
         if (response.status === 500) {
           console.error('Server returned 500 Internal Server Error', {
             url: `${API_URL}/user/login`,
             status: response.status,
             statusText: response.statusText
           });
-          
-     
+
           const errorDetails = await response.text().catch(e => 'No response body');
           console.error('Error response body:', errorDetails);
-          
+
           throw new Error('The server encountered an internal error. This might be temporary - please try again in a few minutes or continue in offline mode.');
         } else if (response.status === 503) {
           throw new Error('The database service is unavailable. You can continue in offline mode.');
         }
-        
+
         throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
       console.log('Login response:', data);
 
       localStorage.setItem('userName', userDetails.name.trim());
       localStorage.setItem('userEmail', userDetails.email.trim());
+      localStorage.setItem('userSubject', userDetails.subject);
       localStorage.removeItem('offlineMode');
       navigate('/start');
-      
+
     } catch (error) {
       console.error('Login error:', error);
-      
-   
-      if (error.message.includes('timeout') || 
-          error.message.includes('Network Error') || 
-          error.message.includes('Failed to fetch') ||
-          error.message.includes('Server error') ||
-          error.message.includes('internal error') ||
-          error.message.includes('unavailable') ||
-          error.name === 'AbortError' ||
-          error.status >= 500) {
-          
-       
+
+      if (error.message.includes('timeout') ||
+        error.message.includes('Network Error') ||
+        error.message.includes('Failed to fetch') ||
+        error.message.includes('Server error') ||
+        error.message.includes('internal error') ||
+        error.message.includes('unavailable') ||
+        error.name === 'AbortError' ||
+        error.status >= 500) {
+
         if (error.message.includes('internal error')) {
           setError(`Server error: ${error.message}. Would you like to retry or continue offline?`);
           setServerStatus('degraded');
@@ -226,15 +216,16 @@ const UserLogin = () => {
       setIsSubmitting(false);
     }
   };
-  
+
   const continueOffline = () => {
     if (!nameRegex.test(userDetails.name)) {
       setNameError('Only alphabetic characters (A-Z, a-z) are allowed');
       return;
     }
-    
+
     localStorage.setItem('userName', userDetails.name.trim());
     localStorage.setItem('userEmail', userDetails.email.trim());
+    localStorage.setItem('userSubject', userDetails.subject);
     localStorage.setItem('offlineMode', 'true');
     navigate('/start');
   };
@@ -246,39 +237,39 @@ const UserLogin = () => {
           <h1 className="text-3xl font-bold text-indigo-700 mb-2">Quiz Master</h1>
           <p className="text-gray-600">Test your knowledge with our interactive quiz</p>
         </div>
-        
+
         <div className="card p-8">
           <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Start Quiz</h2>
-          
+
           {serverStatus === 'offline' && (
             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm">
               <p className="font-medium text-amber-700 mb-1">Server appears to be offline</p>
               <p className="text-amber-600">You can still take the quiz, but your results may not be saved.</p>
             </div>
           )}
-          
+
           {serverStatus === 'degraded' && (
             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg text-sm">
               <p className="font-medium text-amber-700 mb-1">Server may be experiencing issues</p>
               <p className="text-amber-600">You can continue, but some features might not work properly.</p>
             </div>
           )}
-          
+
           {error && (
             <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-red-700">{error}</p>
               <div className="mt-3 flex space-x-3">
                 {(error.includes('internal error') || error.includes('temporary')) && (
-                  <button 
+                  <button
                     onClick={handleSubmit}
                     className="btn-primary text-sm px-3 py-1.5"
                   >
                     Retry
                   </button>
                 )}
-                {(serverStatus === 'offline' || serverStatus === 'degraded' || 
+                {(serverStatus === 'offline' || serverStatus === 'degraded' ||
                   error.includes('internal error') || error.includes('unavailable')) && (
-                  <button 
+                  <button
                     onClick={continueOffline}
                     className="btn-neutral text-sm px-3 py-1.5"
                   >
@@ -288,7 +279,7 @@ const UserLogin = () => {
               </div>
             </div>
           )}
-          
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="form-label">Full Name</label>
@@ -315,6 +306,7 @@ const UserLogin = () => {
                 required
               />
             </div>
+            <input type="hidden" name="subject" value="General" />
             <button
               type="submit"
               disabled={isSubmitting || nameError}
@@ -333,7 +325,7 @@ const UserLogin = () => {
               ) : 'Start Quiz'}
             </button>
           </form>
-          
+
           <div className="mt-6 p-4 bg-indigo-50 rounded-lg border border-indigo-100">
             <p className="text-center text-sm text-indigo-700">
               You can use any name and email to start the quiz. No registration required!
@@ -341,8 +333,8 @@ const UserLogin = () => {
           </div>
 
           <div className="mt-6 flex justify-center">
-            <Link 
-              to={'/admin'} 
+            <Link
+              to={'/admin'}
               className="flex items-center px-4 py-2 text-indigo-800 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
@@ -351,7 +343,7 @@ const UserLogin = () => {
               Admin Portal
             </Link>
           </div>
-          
+
           {(serverStatus === 'offline' || serverStatus === 'degraded') && (
             <div className="mt-4 text-center">
               <span className="badge badge-warning">

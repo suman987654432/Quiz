@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Question = require('../models/Question');
 const auth = require('../middleware/auth');
 const Result = require('../models/Result');
@@ -191,14 +192,27 @@ router.get('/quiz/status', async (req, res) => {
     }
 });
 
+// Simplify subjects route to always return basic subjects
+router.get('/quiz/subjects', async (req, res) => {
+    try {
+        // Always return basic subject list
+        res.json({ subjects: ['General', 'Physics', 'Chemistry', 'Mathematics', 'Biology'] });
+    } catch (error) {
+        console.error('Error fetching subjects:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
 
+// Update the active quiz route to ignore subject filtering
 router.get('/quiz/active', async (req, res) => {
     try {
+        // Ignore subject parameter and return all questions
         const questions = await Question.find().select('-correctAnswer');
 
         const sanitizedQuestions = questions.map(q => ({
             _id: q._id,
             question: q.question,
+            subject: 'General', // Always set to General
             options: q.options,
             timer: q.timer
         }));
@@ -212,13 +226,13 @@ router.get('/quiz/active', async (req, res) => {
 
 router.post('/quiz/submit', async (req, res) => { 
     try {
-        const { answers, userName, userEmail } = req.body;
+        const { answers, userName, userEmail, subject, tabChanges } = req.body;
 
         if (!answers || !userName || !userEmail) {
             return res.status(400).json({ message: 'Missing required fields' });
         }
 
-        
+        // Check if quiz is active
         const settings = await QuizSettings.findOne();
         if (!settings || !settings.isLive) {
             return res.status(403).json({
@@ -230,6 +244,7 @@ router.post('/quiz/submit', async (req, res) => {
         // Check if the result already exists for the user
         const existingResult = await Result.findOne({
             'user.email': userEmail,
+            subject: subject || 'General',
             createdAt: { $gte: new Date(Date.now() - 1000 * 60 * 5) } // Prevent duplicate submissions within 5 minutes
         });
 
@@ -237,8 +252,12 @@ router.post('/quiz/submit', async (req, res) => {
             return res.status(400).json({ message: 'Duplicate result submission detected' });
         }
 
-        // Get all questions
-        const questions = await Question.find();
+        // Get all questions for the subject
+        let query = {};
+        if (subject && subject !== 'All' && subject !== 'General') {
+            query.subject = subject;
+        }
+        const questions = await Question.find(query);
 
         if (!questions.length) {
             return res.status(400).json({ message: 'No questions available' });
@@ -249,7 +268,6 @@ router.post('/quiz/submit', async (req, res) => {
         const results = questions.map((q, index) => {
             const userAnswer = answers[index];
 
-           
             if (userAnswer === null) {
                 return {
                     question: q.question,
@@ -276,6 +294,7 @@ router.post('/quiz/submit', async (req, res) => {
                 name: userName,
                 email: userEmail
             },
+            subject: subject || 'General',
             score,
             total: questions.length,
             answers: results,
@@ -288,6 +307,7 @@ router.post('/quiz/submit', async (req, res) => {
         res.json({
             score,
             total: questions.length,
+            subject: subject || 'General',
             results
         });
     } catch (error) {
@@ -296,14 +316,13 @@ router.post('/quiz/submit', async (req, res) => {
     }
 });
 
-// Add this route to get all user results 
+// Update the results endpoint to include subject information
 router.get('/quiz/results', auth, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-       
         const results = await Result.find()
             .sort({ createdAt: -1 }) 
             .populate('user', 'name email'); 

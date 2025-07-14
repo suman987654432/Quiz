@@ -11,6 +11,11 @@ const resultSchema = new mongoose.Schema({
             required: true
         }
     },
+    subject: {
+        type: String,
+        required: true,
+        default: 'General'
+    },
     score: {
         type: Number,
         required: true

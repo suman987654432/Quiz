@@ -200,7 +200,7 @@ const AdminDashboard = () => {
           />
 
           {/* Tab Navigation */}
-          <div className="flex mb-8 border-b">
+          <div className="flex flex-wrap mb-8 border-b">
             <button
               className={`px-6 py-3 mr-4 font-medium transition-colors duration-200 ${activeTab === 'questions' 
                 ? 'border-b-2 border-indigo-500 text-indigo-700' 

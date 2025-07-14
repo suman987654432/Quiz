@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { API_URL } from '../../config/config';
 import { toast } from 'react-toastify';
 
@@ -47,6 +47,7 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
 
       const data = await response.json();
       setQuestions([...questions, data]);
+
       setNewQuestion({
         question: '',
         options: ['', '', '', ''],
@@ -87,35 +88,6 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
     }
   };
 
-  const handleEditQuestion = async (e) => {
-    e.preventDefault();
-    try {
-      const token = localStorage.getItem('adminToken');
-      const response = await fetch(`${API_URL}/questions/${editingQuestion._id}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(editingQuestion)
-      });
-
-      if (response.ok) {
-        const updatedQuestion = await response.json();
-        setQuestions(questions.map(q =>
-          q._id === editingQuestion._id ? updatedQuestion : q
-        ));
-        setEditingQuestion(null);
-        toast.success('Question updated successfully');
-      } else {
-        throw new Error('Failed to update question');
-      }
-    } catch (error) {
-      toast.error('Failed to update question');
-      console.error('Error:', error);
-    }
-  };
-
   const handleDeleteAllQuestions = async () => {
     if (!window.confirm('Are you sure you want to delete ALL questions? This action cannot be undone.')) {
       return;
@@ -143,6 +115,10 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
       console.error('Error:', error);
     }
   };
+
+  const filteredQuestions = useMemo(() => {
+    return questions;
+  }, [questions]);
 
   return (
     <div>
@@ -172,6 +148,9 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
 
       <form onSubmit={handleQuestionSubmit} className="mb-8 bg-white p-6 rounded-xl border border-gray-200 shadow-md">
         <h3 className="text-xl font-bold mb-4 text-indigo-800">Add New Question</h3>
+        
+        <input type="hidden" name="subject" value="General" />
+
         <div className="mb-4">
           <label className="block mb-2 font-medium text-gray-700">Question</label>
           <textarea
@@ -226,13 +205,12 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
         </button>
       </form>
 
-      {/* Questions List */}
       <div>
         <h3 className="text-xl font-bold mb-4 text-indigo-800 flex items-center">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-          </svg>
-          Questions List
+          Questions
+          <span className="ml-3 bg-indigo-100 text-indigo-800 text-sm font-medium px-3 py-1 rounded-full">
+            {filteredQuestions.length}
+          </span>
         </h3>
 
         {questions.length > 0 && (
@@ -250,10 +228,16 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
         )}
 
         <div className="space-y-4">
-          {questions.map((q, index) => (
+          {filteredQuestions.map((q, index) => (
             <div key={q._id} className="bg-white p-5 rounded-xl shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200">
               {editingQuestion?._id === q._id ? (
                 <form onSubmit={handleEditQuestion} className="space-y-4">
+                  <input 
+                    type="hidden" 
+                    name="subject" 
+                    value={editingQuestion.subject || 'General'} 
+                  />
+                  
                   <textarea
                     value={editingQuestion.question}
                     onChange={(e) => setEditingQuestion({
@@ -295,7 +279,7 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
                       className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors font-medium shadow-sm flex items-center gap-2"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                        <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                       </svg>
                       Cancel
                     </button>
@@ -305,14 +289,17 @@ const QuestionManager = ({ questions, setQuestions, isLive, toggleLiveStatus }) 
                 <>
                   <div className="flex justify-between items-start">
                     <div>
+                      <div className="flex items-center mb-3">
+                        <span className="text-gray-500 text-sm">Question {index + 1}</span>
+                      </div>
                       <p className="font-bold text-gray-800 text-lg mb-2">
                         <span className="text-indigo-600 mr-2">Q{index + 1}.</span>
                         {q.question}
                       </p>
                       <ul className="ml-4 mt-3 space-y-2">
                         {q.options.map((option, i) => (
-                          <li
-                            key={i}
+                          <li 
+                            key={i} 
                             className={`p-2 rounded-lg ${i === q.correctAnswer - 1
                               ? 'bg-green-100 text-green-800 border border-green-200'
                               : 'bg-gray-50 text-gray-700 border border-gray-100'}`}
