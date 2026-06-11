@@ -104,7 +104,7 @@ const AdminLogin = () => {
             </button>
           </form>
           
-          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
+          {/* <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-100">
             <h3 className="font-medium text-blue-800 mb-2">Demo Credentials:</h3>
             <div className="grid grid-cols-3 gap-2 text-sm">
               <span className="text-blue-700 font-medium">Email:</span>
@@ -112,7 +112,7 @@ const AdminLogin = () => {
               <span className="text-blue-700 font-medium">Password:</span>
               <span className="text-blue-600 col-span-2">admin123</span>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

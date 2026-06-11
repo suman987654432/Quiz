@@ -332,7 +332,7 @@ const UserLogin = () => {
             </p>
           </div>
 
-          <div className="mt-6 flex justify-center">
+          {/* <div className="mt-6 flex justify-center">
             <Link
               to={'/admin'}
               className="flex items-center px-4 py-2 text-indigo-800 bg-indigo-50 border border-indigo-200 rounded-md hover:bg-indigo-100 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400"
@@ -342,7 +342,7 @@ const UserLogin = () => {
               </svg>
               Admin Portal
             </Link>
-          </div>
+          </div> */}
 
           {(serverStatus === 'offline' || serverStatus === 'degraded') && (
             <div className="mt-4 text-center">
